@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Communication Interne</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--accent:#3b82f6;--accent2:#6366f1;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.06); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif; }
+        .main-content { margin-left:250px;padding:32px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px; }
+        .card-dark { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px; }
+        .msg-bubble { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:12px; }
+        .msg-author { font-weight:600;color:var(--accent);font-size:0.85rem; }
+        .msg-date { font-size:0.75rem;color:var(--muted); }
+        .msg-text { margin-top:6px;font-size:0.9rem;line-height:1.6; }
+        .form-control-dark { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 14px; }
+        .form-control-dark:focus { background:var(--surface2);border-color:var(--accent);color:var(--text);box-shadow:none; }
+        .btn-send { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:10px;padding:10px 24px;font-weight:700; }
+        .tab-links { display:flex;gap:8px;margin-bottom:20px; }
+        .tab-link { background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 16px;text-decoration:none;font-size:0.85rem;transition:all .2s; }
+        .tab-link:hover,.tab-link.active { background:rgba(59,130,246,0.1);color:var(--accent);border-color:rgba(59,130,246,0.3); }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+<div class="main-content">
+    <div class="page-title"><i class="fa-solid fa-comments me-2"></i>Communication Interne</div>
+    <p style="color:var(--muted);margin-bottom:24px">Discussions entre membres du laboratoire</p>
+
+    <div class="tab-links">
+        <a href="/messages" class="tab-link" th:classappend="${contexte == 'general'} ? 'active'">Général</a>
+        <a href="/messages/equipe/Systèmes Intelligents" class="tab-link">Équipe SI</a>
+        <a href="/messages/equipe/Big Data" class="tab-link">Équipe BD</a>
+        <a href="/messages/equipe/Optimisation" class="tab-link">Équipe Optim</a>
+    </div>
+
+    <div class="card-dark">
+        <div th:if="${messages != null and !messages.isEmpty()}">
+            <div class="msg-bubble" th:each="msg : ${messages}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="msg-author" th:text="${msg.expediteur.prenom + ' ' + msg.expediteur.nom}"></span>
+                    <span class="msg-date" th:text="${#temporals.format(msg.dateEnvoi,'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <div class="msg-text" th:text="${msg.contenu}"></div>
+            </div>
+        </div>
+        <div th:if="${messages == null or messages.isEmpty()}" style="color:var(--muted);text-align:center;padding:40px 0">
+            <i class="fa-regular fa-comment-dots fa-2x mb-3 d-block"></i>
+            Aucun message pour le moment. Soyez le premier à écrire !
+        </div>
+    </div>
+
+    <div class="card-dark">
+        <div class="panel-title mb-3" style="font-family:'Syne',sans-serif;font-weight:700">Envoyer un message</div>
+        <form method="post" action="/messages/envoyer">
+            <input type="hidden" name="equipe" th:value="${equipe}"/>
+            <input type="hidden" name="evenementId" th:value="${evenementId}"/>
+            <textarea class="form-control-dark w-100 mb-3" name="contenu" rows="3" placeholder="Écrivez votre message..." required></textarea>
+            <button type="submit" class="btn-send"><i class="fa-solid fa-paper-plane me-2"></i>Envoyer</button>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

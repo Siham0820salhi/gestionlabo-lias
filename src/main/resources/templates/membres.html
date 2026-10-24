@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Gestion Membres</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-top:4px;}
+
+        .btn-add{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:10px;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .3s;}
+        .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,.35);color:#0a0e1a;}
+
+        .table-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+        .table-dark-lias{width:100%;border-collapse:collapse;}
+        .table-dark-lias thead tr{background:var(--surface2);border-bottom:1px solid var(--border);}
+        .table-dark-lias thead th{padding:14px 18px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+        .table-dark-lias tbody tr{border-bottom:1px solid var(--border);transition:background .2s;}
+        .table-dark-lias tbody tr:last-child{border-bottom:none;}
+        .table-dark-lias tbody tr:hover{background:rgba(255,255,255,.025);}
+        .table-dark-lias tbody td{padding:14px 18px;font-size:.88rem;vertical-align:middle;}
+
+        .membre-name-cell{display:flex;align-items:center;gap:12px;}
+        .avatar-sm{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;color:#0a0e1a;flex-shrink:0;}
+        .membre-full-name{font-weight:600;}
+        .email-text{color:var(--muted);font-size:.82rem;}
+        .etab-text{color:var(--muted);font-size:.82rem;}
+
+        .badge-PERMANENT{background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-DOCTORANT{background:rgba(99,102,241,.12);color:var(--accent2);border:1px solid rgba(99,102,241,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-ASSOCIE{background:rgba(129,140,248,.12);color:var(--accent3);border:1px solid rgba(129,140,248,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-DIRECTEUR{background:rgba(96,165,250,.12);color:var(--accent4);border:1px solid rgba(96,165,250,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-default{background:rgba(100,116,139,.1);color:var(--muted);border:1px solid rgba(100,116,139,.15);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+
+        .btn-voir{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--accent2);border-radius:8px;padding:6px 14px;font-size:.8rem;cursor:pointer;transition:all .2s;}
+        .btn-voir:hover{background:rgba(99,102,241,.2);}
+
+        /* Modal dark */
+        .modal-dark .modal-content{background:var(--surface);border:1px solid var(--border);border-radius:18px;}
+        .modal-dark .modal-header{background:var(--surface2);border-bottom:1px solid var(--border);border-radius:18px 18px 0 0;}
+        .modal-dark .modal-title{font-family:'Syne',sans-serif;font-weight:700;color:var(--text);}
+        .modal-dark .modal-body{background:var(--surface);}
+        .modal-dark .btn-close{filter:invert(1);}
+        .modal-avatar{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#0a0e1a;margin:0 auto 16px;}
+        .modal-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;text-align:center;margin-bottom:6px;}
+        .modal-field{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
+        .modal-field-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+        .modal-field-value{font-size:.88rem;color:var(--text);}
+        .modal-section-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--accent);margin:18px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+        .modal-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+
+        .empty-row td{text-align:center;padding:48px;color:var(--muted);}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <div class="page-title">Membres du Laboratoire</div>
+            <div class="page-sub">Gestion des chercheurs, doctorants et membres associés</div>
+        </div>
+        <a href="/membres/nouveau" class="btn-add">
+            <i class="fa-solid fa-plus"></i>Ajouter Membre
+        </a>
+    </div>
+
+    <div class="table-card">
+        <table class="table-dark-lias">
+            <thead>
+                <tr>
+                    <th>Membre</th>
+                    <th>Email</th>
+                    <th>Établissement</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="m : ${membresList}">
+                    <td>
+                        <div class="membre-name-cell">
+                            <div class="avatar-sm" th:text="${!#strings.isEmpty(m.prenom) ? #strings.toUpperCase(#strings.substring(m.prenom,0,1)) : '?'}"></div>
+                        <span class="membre-full-name" th:text="${(m.prenom ?: '') + ' ' + (m.nom ?: '')}"></span>
+                        </div>
+                    </td>
+                    <td class="email-text" th:text="${m.email}"></td>
+                    <td class="etab-text" th:text="${m.etablissementOrigine ?: '—'}"></td>
+                    <td>
+                        <span th:class="${'badge-' + (m.statutActuel != null ? m.statutActuel.name() : 'default')}"
+                              th:text="${m.statutActuel}"></span>
+                    </td>
+                    <td>
+                        <button class="btn-voir" type="button"
+                                onclick="ouvrirProfil(event, this)"
+                                th:data-id="${m.idMembre}"
+                                th:data-fullname="${m.prenom + ' ' + m.nom}"
+                                th:data-email="${m.email}"
+                                th:data-statut="${m.statutActuel}"
+                                th:data-etab="${m.etablissementOrigine}"
+                                th:data-labo="${m.laboratoireOrigine}">
+                            <i class="fa-solid fa-eye me-1"></i>Voir
+                        </button>
+                    </td>
+                </tr>
+                <tr th:if="${membresList == null or membresList.isEmpty()}" class="empty-row">
+                    <td colspan="5">
+                        <i class="fa-solid fa-users-slash fa-2x d-block mb-2" style="opacity:.3"></i>
+                        Aucun membre enregistré.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal dark -->
+<div class="modal fade modal-dark" id="membreModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa-solid fa-id-card me-2" style="color:var(--accent)"></i>Fiche Membre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4" style="border-right:1px solid var(--border)">
+                        <div class="modal-avatar"><i class="fa-solid fa-user"></i></div>
+                        <div class="modal-name" id="pFullname"></div>
+                        <div style="text-align:center;margin-bottom:12px">
+                            <span id="pStatut" style="font-size:.75rem;font-weight:700;border-radius:20px;padding:4px 14px"></span>
+                        </div>
+                        <div class="modal-field">
+                            <div class="modal-field-label">Email</div>
+                            <div class="modal-field-value" id="pEmail" style="word-break:break-all"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="modal-section-title"><i class="fa-solid fa-building-columns me-2"></i>Formation</div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="modal-field">
+                                    <div class="modal-field-label">Établissement</div>
+                                    <div class="modal-field-value" id="pEtab"></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="modal-field">
+                                    <div class="modal-field-label">Laboratoire</div>
+                                    <div class="modal-field-value" id="pLabo"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-section-title"><i class="fa-solid fa-pen-nib me-2"></i>Profil</div>
+                        <div class="modal-field">
+                            <div class="modal-field-label">Biographie</div>
+                            <div class="modal-field-value" id="pBio" style="color:var(--muted);line-height:1.6"></div>
+                        </div>
+                        <div class="modal-field">
+                            <div class="modal-field-label">Centres d'intérêt</div>
+                            <div class="modal-field-value" id="pInterets" style="color:var(--muted)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function ouvrirProfil(event, btn) {
+    event.preventDefault();
+    var id = btn.getAttribute('data-id');
+    document.getElementById('pFullname').innerText = btn.getAttribute('data-fullname');
+    document.getElementById('pEmail').innerText = btn.getAttribute('data-email');
+    document.getElementById('pStatut').innerText = btn.getAttribute('data-statut');
+    document.getElementById('pEtab').innerText = btn.getAttribute('data-etab') || '—';
+    document.getElementById('pLabo').innerText = btn.getAttribute('data-labo') || '—';
+    fetch('/membres/api/membres/' + id)
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('pBio').innerText = d.biographie || 'Aucune biographie.';
+            document.getElementById('pInterets').innerText = d.centresDinteret || 'Non spécifiés.';
+        }).catch(() => {});
+    new bootstrap.Modal(document.getElementById('membreModal')).show();
+}
+</script>
+</body>
+</html>

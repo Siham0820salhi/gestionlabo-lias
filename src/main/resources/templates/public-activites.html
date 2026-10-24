@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Activités & Événements</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#05070f;--surface:#0d1117;--surface2:#111827;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.06); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh; }
+        .bg-glow { position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 0% 50%,rgba(59,130,246,0.06),transparent),radial-gradient(ellipse 60% 40% at 100% 0%,rgba(129,140,248,0.05),transparent);pointer-events:none; }
+
+        /* Navbar */
+        nav { position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(5,7,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border); }
+        .nav-brand { display:flex;align-items:center;gap:12px;text-decoration:none; }
+        .nav-icon { width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#05070f;font-size:.9rem; }
+        .nav-title { font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent; }
+        .btn-back { background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 16px;text-decoration:none;font-size:.85rem;transition:all .2s; }
+        .btn-back:hover { background:rgba(255,255,255,0.1);color:var(--text); }
+
+        /* Contenu */
+        .content { padding:110px 0 60px; }
+        .page-label { display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);color:var(--accent2);border-radius:20px;padding:6px 18px;font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;margin-bottom:12px; }
+        .page-sub { color:var(--muted);font-size:1rem;line-height:1.7;max-width:560px;margin-bottom:40px; }
+
+        /* Type colors */
+        .type-CONFERENCE { background:rgba(59,130,246,0.1);color:var(--accent);border:1px solid rgba(59,130,246,0.2); }
+        .type-SEMINAIRE  { background:rgba(99,102,241,0.1);color:var(--accent2);border:1px solid rgba(99,102,241,0.2); }
+        .type-WORKSHOP   { background:rgba(129,140,248,0.1);color:var(--accent3);border:1px solid rgba(129,140,248,0.2); }
+
+        /* Event card */
+        .event-card { background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all .3s;margin-bottom:20px; }
+        .event-card:hover { transform:translateY(-4px);border-color:rgba(255,255,255,0.1);box-shadow:0 12px 40px rgba(0,0,0,0.35); }
+
+        .event-card-inner { display:flex;gap:0; }
+
+        /* Date block */
+        .event-date-block { width:100px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;background:var(--surface2);border-right:1px solid var(--border); }
+        .event-day { font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;line-height:1; }
+        .event-month { font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:4px; }
+        .event-year { font-size:.7rem;color:var(--muted);margin-top:2px; }
+
+        /* Contenu event */
+        .event-body { padding:24px;flex:1; }
+        .event-type-badge { display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:4px 12px;font-size:.72rem;font-weight:700;margin-bottom:12px; }
+        .event-title { font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:8px;line-height:1.4; }
+        .event-desc { color:var(--muted);font-size:.87rem;line-height:1.6;margin-bottom:14px; }
+        .event-meta { display:flex;gap:16px;flex-wrap:wrap; }
+        .event-meta-item { display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted); }
+
+        /* Edition badge */
+        .edition-badge { background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:3px 10px;font-size:.75rem; }
+
+        .empty-state { text-align:center;padding:80px 0;color:var(--muted); }
+    </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<nav>
+    <a href="/" class="nav-brand">
+        <div class="nav-icon"><i class="fa-solid fa-flask-vial"></i></div>
+        <span class="nav-title">Labo LIAS</span>
+    </a>
+    <div class="d-flex gap-2">
+        <a href="/public/publications" class="btn-back">Publications</a>
+        <a href="/public/equipes" class="btn-back">Équipes</a>
+        <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i>Accueil</a>
+    </div>
+</nav>
+
+<div class="content">
+    <div class="container">
+        <div class="page-label"><i class="fa-solid fa-calendar-days"></i>Agenda Scientifique</div>
+        <h1 class="page-title">Activités, Conférences &<br>
+            <span style="background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Séminaires</span>
+        </h1>
+        <p class="page-sub">Découvrez l'ensemble des événements scientifiques organisés par le laboratoire LIAS — conférences, séminaires et workshops.</p>
+
+        <div th:if="${evenements != null and !evenements.isEmpty()}">
+            <div th:each="ev : ${evenements}" class="event-card">
+                <div class="event-card-inner">
+                    <!-- Date block -->
+                    <div class="event-date-block">
+                        <div class="event-day"
+                             th:text="${ev.date != null ? #temporals.format(ev.date,'dd') : '--'}"
+                             th:style="${ev.type != null ? ('color: ' + (ev.type.name() == 'CONFERENCE' ? '#3b82f6' : ev.type.name() == 'SEMINAIRE' ? '#6366f1' : '#818cf8')) : ''}">
+                        </div>
+                        <div class="event-month" th:text="${ev.date != null ? #temporals.format(ev.date,'MMM') : '---'}"></div>
+                        <div class="event-year" th:text="${ev.date != null ? #temporals.format(ev.date,'yyyy') : ''}"></div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="event-body">
+                        <div class="event-type-badge"
+                             th:classappend="${'type-' + (ev.type != null ? ev.type.name() : 'CONFERENCE')}">
+                            <i class="fa-solid fa-tag"></i>
+                            <span th:text="${ev.type}">TYPE</span>
+                        </div>
+                        <div class="event-title" th:text="${ev.titre}">Titre de l'événement</div>
+                        <div class="event-desc" th:if="${ev.description}" th:text="${ev.description}"></div>
+                        <div class="event-meta">
+                            <div class="event-meta-item" th:if="${ev.lieu}">
+                                <i class="fa-solid fa-location-dot" style="color:var(--accent3)"></i>
+                                <span th:text="${ev.lieu}"></span>
+                            </div>
+                            <div class="event-meta-item" th:if="${ev.edition > 0}">
+                                <i class="fa-solid fa-hashtag" style="color:var(--accent2)"></i>
+                                <span class="edition-badge" th:text="'Édition ' + ${ev.edition}"></span>
+                            </div>
+                            <div class="event-meta-item" th:if="${ev.organisateur}">
+                                <i class="fa-solid fa-user-tie" style="color:var(--accent)"></i>
+                                <span th:text="${ev.organisateur.prenom + ' ' + ev.organisateur.nom}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${evenements == null or evenements.isEmpty()}" class="empty-state">
+            <i class="fa-solid fa-calendar-xmark fa-4x mb-4 d-block" style="opacity:.3"></i>
+            <p style="font-size:1.1rem">Aucun événement enregistré pour le moment.</p>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

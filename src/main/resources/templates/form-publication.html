@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Nouvelle Publication</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,#818cf8,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-bottom:32px;}
+
+        .form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:760px;position:relative;}
+        .form-card::before{content:'';position:absolute;top:-1px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,#818cf8,var(--accent2),transparent);}
+
+        .section-label{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#818cf8;margin:24px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+        .section-label:first-child{margin-top:0;}
+
+        .field-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+        .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:border-color .2s;margin-bottom:18px;}
+        .form-input:focus{outline:none;border-color:rgba(167,139,250,.4);box-shadow:0 0 0 3px rgba(167,139,250,.07);}
+        .form-input::placeholder{color:var(--muted);}
+        select.form-input option{background:var(--surface2);}
+        input[type="file"].form-input{padding:8px 14px;cursor:pointer;}
+
+        .btn-submit{background:linear-gradient(135deg,#818cf8,var(--accent2));color:#0a0e1a;border:none;border-radius:12px;padding:13px 32px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(167,139,250,.35);}
+        .btn-cancel{background:rgba(100,116,139,.1);border:1px solid rgba(100,116,139,.2);color:var(--muted);border-radius:12px;padding:13px 24px;font-weight:600;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+        .btn-cancel:hover{background:rgba(100,116,139,.2);color:var(--text);}
+
+        .hint{font-size:.75rem;color:var(--muted);margin-top:-12px;margin-bottom:16px;}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-title">Enregistrer une Publication</div>
+    <div class="page-sub">Ajoutez un article, une thèse ou un brevet au catalogue du laboratoire</div>
+
+    <div class="form-card">
+        <!-- enctype multipart obligatoire pour l'upload PDF -->
+        <form th:action="@{/publications/sauvegarder}" th:object="${publication}"
+              method="POST" enctype="multipart/form-data">
+
+            <!-- ── Section Référence ── -->
+            <div class="section-label">
+                <i class="fa-solid fa-book-open"></i>Référence bibliographique
+            </div>
+
+            <label class="field-label">Titre de la publication *</label>
+            <input type="text" class="form-input" th:field="*{titre}" required
+                   placeholder="Ex: Deep Learning for Time-Series Forecasting in Smart Grids">
+
+            <label class="field-label">Auteurs *</label>
+            <input type="text" class="form-input" th:field="*{auteurs}" required
+                   placeholder="Ex: S. Salhi, O. Talbi, M. Benali — séparés par des virgules">
+
+            <div class="row g-3" style="margin-bottom:0">
+                <div class="col-md-4">
+                    <label class="field-label">Année *</label>
+                    <input type="number" class="form-input" th:field="*{annee}" required
+                           min="1990" max="2100" placeholder="2026">
+                </div>
+                <div class="col-md-8">
+                    <label class="field-label">Journal / Conférence *</label>
+                    <input type="text" class="form-input" th:field="*{journalOuConference}" required
+                           placeholder="Ex: IEEE Access, Springer LNCS, IJCAI 2026">
+                </div>
+            </div>
+
+            <!-- ── Section Affiliation LIAS ── -->
+            <div class="section-label">
+                <i class="fa-solid fa-flask-vial"></i>Affiliation au laboratoire
+            </div>
+
+            <div class="row g-3" style="margin-bottom:0">
+                <div class="col-md-6">
+                    <label class="field-label">Équipe de recherche</label>
+                    <input type="text" class="form-input" th:field="*{equipe}"
+                           placeholder="Ex: Équipe Intelligence Artificielle">
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Chercheur LIAS associé</label>
+                    <select class="form-input" th:field="*{membre}">
+                        <option value="">— Aucun / Non spécifié —</option>
+                        <option th:each="m : ${membresList}"
+                                th:value="${m.idMembre}"
+                                th:text="${(m.prenom ?: '') + ' ' + (m.nom ?: '')}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ── Section Accès en ligne ── -->
+            <div class="section-label">
+                <i class="fa-solid fa-link"></i>Accès en ligne
+            </div>
+
+            <label class="field-label">Lien de la publication (URL)</label>
+            <input type="url" class="form-input" th:field="*{lien}"
+                   placeholder="https://doi.org/10.1234/exemple ou lien IEEE/Springer...">
+            <p class="hint"><i class="fa-solid fa-circle-info" style="color:#818cf8"></i>
+                Les visiteurs pourront accéder directement à la publication via ce lien.</p>
+
+            <label class="field-label">Fichier PDF de la publication</label>
+            <input type="file" name="pdfFile" class="form-input" accept=".pdf">
+            <p class="hint"><i class="fa-solid fa-circle-info" style="color:#818cf8"></i>
+                Format PDF uniquement. Le fichier sera téléchargeable depuis la liste des publications.</p>
+
+            <!-- ── Boutons ── -->
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:28px">
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-floppy-disk"></i>Enregistrer la publication
+                </button>
+                <a href="/publications" class="btn-cancel">
+                    <i class="fa-solid fa-arrow-left"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

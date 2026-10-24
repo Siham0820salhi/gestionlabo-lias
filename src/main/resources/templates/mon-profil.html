@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Mon Profil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07); }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+        .main-content { margin-left:250px; padding:32px; }
+
+        .page-title { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+        /* Avatar banner */
+        .profile-banner {
+            background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-banner::before {
+            content:'';
+            position:absolute; top:-40px; right:-40px;
+            width:180px; height:180px;
+            background: radial-gradient(circle,rgba(59,130,246,0.12),transparent 70%);
+            border-radius:50%;
+        }
+        .avatar-circle {
+            width: 90px; height: 90px;
+            border-radius: 22px;
+            background: linear-gradient(135deg,var(--accent),var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #0a0e1a; font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+        }
+        .profile-name { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; margin-bottom:6px; }
+        .profile-email { color:var(--muted); font-size:0.88rem; margin-bottom:10px; }
+        .status-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); color:var(--accent); border-radius:20px; padding:5px 14px; font-size:0.78rem; font-weight:600; }
+
+        /* Cards */
+        .card-dark { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:28px; margin-bottom:22px; }
+        .section-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+        .section-title .dot { width:8px; height:8px; border-radius:50%; }
+
+        /* Inputs */
+        .field-group { margin-bottom:18px; }
+        .field-label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:7px; }
+        .form-input {
+            width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+            padding:11px 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.9rem;
+            transition:border-color .2s;
+        }
+        .form-input:focus { outline:none; border-color:rgba(59,130,246,0.4); background:#141c2e; }
+        .form-input::placeholder { color:var(--muted); }
+        textarea.form-input { resize:vertical; }
+
+        /* Boutons */
+        .btn-save {
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            color:#0a0e1a; border:none; border-radius:12px;
+            padding:12px 28px; font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+            cursor:pointer; transition:all .3s;
+        }
+        .btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(59,130,246,0.3); }
+        .btn-cancel {
+            background:var(--surface2); color:var(--muted); border:1px solid var(--border);
+            border-radius:12px; padding:12px 24px; font-size:0.9rem; text-decoration:none;
+            transition:all .2s; display:inline-block;
+        }
+        .btn-cancel:hover { background:rgba(255,255,255,0.06); color:var(--text); }
+
+        /* Tableau historique */
+        .hist-table { width:100%; border-collapse:collapse; }
+        .hist-table thead th { background:var(--surface2); color:var(--muted); font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; padding:12px 16px; text-align:left; }
+        .hist-table tbody tr { border-bottom:1px solid var(--border); }
+        .hist-table tbody tr:last-child { border-bottom:none; }
+        .hist-table tbody td { padding:12px 16px; font-size:0.87rem; vertical-align:middle; }
+        .hist-badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.72rem; font-weight:600; background:rgba(59,130,246,0.1); color:var(--accent); }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+
+    <!-- Banner profil -->
+    <div class="profile-banner">
+        <div class="avatar-circle" th:if="${membre.photo == null or membre.photo.isEmpty()}">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <img th:if="${membre.photo != null and !membre.photo.isEmpty()}"
+             th:src="${membre.transientPhotoImagePath}"
+             alt="Photo de profil"
+             style="width:90px;height:90px;border-radius:22px;object-fit:cover;flex-shrink:0;box-shadow:0 8px 24px rgba(59,130,246,0.3)">
+        <div>
+            <div class="profile-name" th:text="${membre.prenom + ' ' + membre.nom}">Membre LIAS</div>
+            <div class="profile-email" th:text="${membre.email}">email@lias.ma</div>
+            <span class="status-badge">
+                <i class="fa-solid fa-circle" style="font-size:0.5rem"></i>
+                <span th:text="${membre.statutActuel}">PERMANENT</span>
+            </span>
+        </div>
+    </div>
+
+    <form th:action="@{/profil/modifier}" th:object="${membre}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" th:field="*{idMembre}">
+
+        <div class="row g-4">
+            <!-- Informations personnelles -->
+            <div class="col-lg-8">
+                <div class="card-dark">
+                    <div class="section-title">
+                        <div class="dot" style="background:var(--accent)"></div>
+                        Informations Personnelles
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label class="field-label">Nom</label>
+                                <input type="text" class="form-input" th:field="*{nom}" placeholder="Votre nom">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label class="field-label">Prénom</label>
+                                <input type="text" class="form-input" th:field="*{prenom}" placeholder="Votre prénom">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">Biographie</label>
+                                <textarea class="form-input" rows="4" th:field="*{biographie}" placeholder="Décrivez votre parcours..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">Centres d'intérêt</label>
+                                <input type="text" class="form-input" th:field="*{centresDinteret}" placeholder="IA, Big Data, DevOps...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label class="field-label">Établissement d'origine</label>
+                                <input type="text" class="form-input" th:field="*{etablissementOrigine}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="field-group">
+                                <label class="field-label">Laboratoire d'origine</label>
+                                <input type="text" class="form-input" th:field="*{laboratoireOrigine}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-group">
+                                <label class="field-label">Équipe actuelle</label>
+                                <input type="text" class="form-input" th:field="*{equipeActuelle}" placeholder="Nom de l'équipe de recherche">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo de profil -->
+            <div class="col-lg-4">
+                <div class="card-dark">
+                    <div class="section-title">
+                        <div class="dot" style="background:var(--accent2)"></div>
+                        Photo de Profil
+                    </div>
+                    <div style="text-align:center;margin-bottom:20px">
+                        <div class="avatar-circle mx-auto" style="width:80px;height:80px;font-size:1.6rem"
+                             th:if="${membre.photo == null or membre.photo.isEmpty()}">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <img th:if="${membre.photo != null and !membre.photo.isEmpty()}"
+                             th:src="${membre.transientPhotoImagePath}"
+                             alt="Photo actuelle"
+                             class="mx-auto d-block"
+                             style="width:80px;height:80px;border-radius:22px;object-fit:cover;border:2px solid rgba(59,130,246,0.3)">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Choisir une photo</label>
+                        <input type="file" name="photoFile" class="form-input" accept="image/*">
+                    </div>
+                    <p style="font-size:0.75rem;color:var(--muted);margin-top:8px">
+                        Formats acceptés : JPG, PNG. Max 5 MB.
+                    </p>
+                </div>
+
+                <!-- Statut actuel (lecture seule) -->
+                <div class="card-dark">
+                    <div class="section-title">
+                        <div class="dot" style="background:var(--accent4)"></div>
+                        Statut & Rôle
+                    </div>
+                    <div style="margin-bottom:12px">
+                        <label class="field-label">Statut</label>
+                        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:0.88rem"
+                             th:text="${membre.statutActuel}"></div>
+                    </div>
+                    <div>
+                        <label class="field-label">Rôle</label>
+                        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:0.88rem"
+                             th:text="${membre.role ?: 'Non défini'}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="d-flex gap-3 mt-2 mb-4">
+            <button type="submit" class="btn-save">
+                <i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer les modifications
+            </button>
+            <a href="/dashboard" class="btn-cancel">Annuler</a>
+        </div>
+    </form>
+
+    <!-- Historique affiliations -->
+    <div class="card-dark">
+        <div class="section-title">
+            <div class="dot" style="background:var(--accent3)"></div>
+            Historique des Affiliations
+        </div>
+        <div th:if="${historiqueList != null and !historiqueList.isEmpty()}">
+            <table class="hist-table">
+                <thead>
+                    <tr>
+                        <th>Statut</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="hist : ${historiqueList}">
+                        <td><span class="hist-badge" th:text="${hist.statut}"></span></td>
+                        <td th:text="${hist.dateDebut != null ? #temporals.format(hist.dateDebut,'dd/MM/yyyy') : '-'}"></td>
+                        <td th:text="${hist.dateFin != null ? #temporals.format(hist.dateFin,'dd/MM/yyyy') : 'Actuel'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${historiqueList == null or historiqueList.isEmpty()}"
+             style="text-align:center;padding:30px;color:var(--muted);font-size:0.88rem">
+            Aucun historique d'affiliation enregistré.
+        </div>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

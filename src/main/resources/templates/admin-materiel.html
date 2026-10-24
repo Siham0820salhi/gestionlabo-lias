@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Gestion Matériel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,#60a5fa,var(--accent4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-bottom:28px;}
+
+        /* Sections */
+        .section-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;margin-bottom:24px;overflow:hidden;}
+        .section-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+        .section-head-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;display:flex;align-items:center;gap:10px;}
+        .section-body{padding:22px;}
+
+        /* Tables */
+        .tbl{width:100%;border-collapse:collapse;}
+        .tbl thead tr{background:var(--surface2);}
+        .tbl thead th{padding:12px 16px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+        .tbl tbody tr{border-top:1px solid var(--border);transition:background .2s;}
+        .tbl tbody tr:hover{background:rgba(255,255,255,.025);}
+        .tbl tbody td{padding:12px 16px;font-size:.87rem;vertical-align:middle;}
+
+        /* Badges */
+        .badge-EN_ATTENTE{background:rgba(96,165,250,.12);color:var(--accent4);border:1px solid rgba(96,165,250,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-ACCEPTEE{background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-REFUSEE{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.2);border-radius:20px;padding:3px 12px;font-size:.72rem;font-weight:700;}
+        .badge-DEFINITIF{background:rgba(167,139,250,.12);color:#818cf8;border:1px solid rgba(167,139,250,.2);border-radius:20px;padding:3px 11px;font-size:.7rem;font-weight:700;}
+        .badge-TEMPORAIRE{background:rgba(99,102,241,.1);color:var(--accent2);border:1px solid rgba(99,102,241,.2);border-radius:20px;padding:3px 11px;font-size:.7rem;font-weight:700;}
+        .badge-dispo{background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:3px 11px;font-size:.7rem;font-weight:700;}
+        .badge-occupe{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.2);border-radius:20px;padding:3px 11px;font-size:.7rem;font-weight:700;}
+
+        /* Boutons */
+        .btn-action{border:none;border-radius:8px;padding:5px 13px;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+        .btn-accept{background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.2);}
+        .btn-accept:hover{background:rgba(59,130,246,.22);}
+        .btn-refuse{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.2);}
+        .btn-refuse:hover{background:rgba(248,113,113,.18);}
+        .btn-retour{background:rgba(96,165,250,.1);color:var(--accent4);border:1px solid rgba(96,165,250,.2);}
+        .btn-retour:hover{background:rgba(96,165,250,.2);}
+
+        /* Formulaires inline */
+        .form-inline-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;width:100%;}
+        .form-inline-input:focus{outline:none;border-color:rgba(249,115,22,.4);}
+        select.form-inline-input option{background:var(--surface2);}
+
+        .btn-primary-sm{background:linear-gradient(135deg,#60a5fa,var(--accent4));color:#0a0e1a;border:none;border-radius:10px;padding:9px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:7px;}
+        .btn-primary-sm:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(249,115,22,.3);}
+
+        .member-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);border-radius:20px;padding:3px 10px;font-size:.75rem;color:var(--accent2);}
+
+        .alert-success{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);color:var(--accent);border-radius:12px;padding:12px 18px;margin-bottom:18px;font-size:.88rem;}
+        .alert-info{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--accent2);border-radius:12px;padding:12px 18px;margin-bottom:18px;font-size:.88rem;}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-title">Gestion du Matériel</div>
+    <div class="page-sub">Distribution, inventaire et historique des équipements du laboratoire</div>
+
+    <!-- Alertes -->
+    <div th:if="${param.success}"    class="alert-success"><i class="fa-solid fa-check-circle me-2"></i>Distribution effectuée avec succès.</div>
+    <div th:if="${param.materielAjoute}" class="alert-success"><i class="fa-solid fa-check-circle me-2"></i>Équipement ajouté à l'inventaire.</div>
+    <div th:if="${param.retour}"     class="alert-success"><i class="fa-solid fa-check-circle me-2"></i>Matériel marqué comme retourné.</div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 1 : INVENTAIRE + DISPONIBILITÉ
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-head-title">
+                <i class="fa-solid fa-boxes-stacked" style="color:#60a5fa"></i>
+                Inventaire des Équipements
+            </div>
+            <!-- Vérification disponibilité par date -->
+            <form method="GET" action="/admin/demandes" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:.82rem;color:var(--muted)">Vérifier disponibilité le :</span>
+                <input type="date" name="dateCheck" class="form-inline-input"
+                       th:value="${dateCheck}" style="width:160px">
+                <button type="submit" class="btn-action btn-accept" style="padding:7px 14px">
+                    <i class="fa-solid fa-magnifying-glass"></i>Vérifier
+                </button>
+            </form>
+        </div>
+
+        <div class="section-body" style="padding-bottom:0">
+            <!-- Formulaire ajout équipement -->
+            <form method="POST" action="/admin/materiel/ajouter"
+                  style="display:grid;grid-template-columns:2fr 3fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:18px;flex-wrap:wrap">
+                <div>
+                    <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Nom *</label>
+                    <input type="text" name="nom" class="form-inline-input" placeholder="Ex: Laptop Dell XPS" required>
+                </div>
+                <div>
+                    <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Description</label>
+                    <input type="text" name="description" class="form-inline-input" placeholder="Caractéristiques...">
+                </div>
+                <div>
+                    <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Référence</label>
+                    <input type="text" name="reference" class="form-inline-input" placeholder="SN-001">
+                </div>
+                <div>
+                    <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Date acquisition</label>
+                    <input type="date" name="dateAcquisition" class="form-inline-input">
+                </div>
+                <button type="submit" class="btn-primary-sm">
+                    <i class="fa-solid fa-plus"></i>Ajouter
+                </button>
+            </form>
+
+            <!-- Liste inventaire -->
+            <table class="tbl" style="margin-bottom:0">
+                <thead>
+                    <tr>
+                        <th>Équipement</th>
+                        <th>Référence</th>
+                        <th>Acquis le</th>
+                        <th>Statut au <span th:text="${#temporals.format(dateCheck,'dd/MM/yyyy')}"></span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="mat : ${inventaire}">
+                        <td>
+                            <div style="font-weight:600" th:text="${mat.nom}"></div>
+                            <div style="font-size:.78rem;color:var(--muted)" th:text="${mat.description}"></div>
+                        </td>
+                        <td style="color:var(--muted);font-size:.82rem" th:text="${mat.reference ?: '—'}"></td>
+                        <td style="color:var(--muted);font-size:.82rem"
+                            th:text="${mat.dateAcquisition != null ? #temporals.format(mat.dateAcquisition,'dd/MM/yyyy') : '—'}"></td>
+                        <td>
+                            <span th:if="${occupes.contains(mat.id)}" class="badge-occupe">
+                                <i class="fa-solid fa-lock" style="font-size:.65rem"></i> Occupé
+                            </span>
+                            <span th:unless="${occupes.contains(mat.id)}" class="badge-dispo">
+                                <i class="fa-solid fa-circle-check" style="font-size:.65rem"></i> Disponible
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${inventaire.isEmpty()}">
+                        <td colspan="4" style="text-align:center;padding:32px;color:var(--muted)">
+                            <i class="fa-solid fa-boxes-stacked fa-2x d-block mb-2" style="opacity:.3"></i>
+                            Aucun équipement dans l'inventaire.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 2 : DISTRIBUTION DIRECTE (par le Directeur)
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-head-title">
+                <i class="fa-solid fa-hand-holding-box" style="color:var(--accent4)"></i>
+                Distribution Directe
+            </div>
+            <span style="font-size:.78rem;color:var(--muted)">Uniquement PERMANENT et DOCTORANT</span>
+        </div>
+
+        <div class="section-body">
+            <form method="POST" action="/admin/materiel/distribuer">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Équipement *</label>
+                        <select name="materielId" class="form-inline-input" required>
+                            <option value="">— Sélectionner —</option>
+                            <option th:each="mat : ${inventaire}"
+                                    th:value="${mat.id}"
+                                    th:text="${mat.nom + (mat.reference != null ? ' (' + mat.reference + ')' : '')}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Membre *</label>
+                        <select name="membreId" class="form-inline-input" required>
+                            <option value="">— Sélectionner —</option>
+                            <option th:each="m : ${membresEligibles}"
+                                    th:value="${m.idMembre}"
+                                    th:text="${m.prenom + ' ' + m.nom + ' (' + m.statutActuel + ')'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Type *</label>
+                        <select name="typePret" id="typePretSelect" class="form-inline-input" required onchange="toggleDateFin()">
+                            <option value="TEMPORAIRE">Temporaire</option>
+                            <option value="DEFINITIF">Définitif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Date début *</label>
+                        <input type="date" name="dateDebut" class="form-inline-input" required
+                               th:value="${#temporals.format(dateCheck,'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-2" id="dateFinBlock">
+                        <label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Date fin</label>
+                        <input type="date" name="dateFin" id="dateFinInput" class="form-inline-input">
+                    </div>
+                </div>
+                <div style="margin-top:16px">
+                    <button type="submit" class="btn-primary-sm">
+                        <i class="fa-solid fa-share-from-square"></i>Distribuer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 3 : DEMANDES DES MEMBRES (en attente)
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-head-title">
+                <i class="fa-solid fa-inbox" style="color:var(--accent2)"></i>
+                Demandes des Membres
+            </div>
+        </div>
+
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Membre</th>
+                    <th>Description</th>
+                    <th>Type souhaité</th>
+                    <th>Dates souhaitées</th>
+                    <th>Date demande</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${demandes}">
+                    <td>
+                        <span class="member-chip">
+                            <i class="fa-solid fa-user" style="font-size:.65rem"></i>
+                            <span th:text="${d.membre.nom + ' ' + d.membre.prenom}"></span>
+                        </span>
+                    </td>
+                    <td style="color:var(--muted);font-size:.82rem;max-width:200px" th:text="${d.description}"></td>
+                    <td>
+                        <span th:if="${d.typePret != null}"
+                              th:class="${'badge-' + d.typePret.name()}"
+                              th:text="${d.typePret == T(com.lias.gestionlabo.models.TypePret).DEFINITIF ? 'Définitif' : 'Temporaire'}"></span>
+                        <span th:unless="${d.typePret != null}" style="color:var(--muted);font-size:.78rem">—</span>
+                    </td>
+                    <td style="font-size:.8rem;color:var(--muted)">
+                        <span th:if="${d.dateDebutSouhaitee != null}"
+                              th:text="${#temporals.format(d.dateDebutSouhaitee,'dd/MM/yy') + ' → ' + (d.dateFinSouhaitee != null ? #temporals.format(d.dateFinSouhaitee,'dd/MM/yy') : '∞')}"></span>
+                        <span th:unless="${d.dateDebutSouhaitee != null}">—</span>
+                    </td>
+                    <td style="font-size:.8rem;color:var(--muted)"
+                        th:text="${d.dateDemande != null ? #temporals.format(d.dateDemande,'dd/MM/yyyy') : '—'}"></td>
+                    <td>
+                        <span th:class="${'badge-' + (d.statut != null ? d.statut.name() : 'EN_ATTENTE')}"
+                              th:text="${d.statut}"></span>
+                    </td>
+                    <td>
+                        <div th:if="${d.statut != null and d.statut.name() == 'EN_ATTENTE'}" style="display:flex;gap:6px">
+                            <form th:action="@{/admin/demandes/accepter/{id}(id=${d.id})}" method="POST" style="display:inline">
+                                <button type="submit" class="btn-action btn-accept">
+                                    <i class="fa-solid fa-check"></i>Accepter
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/demandes/refuser/{id}(id=${d.id})}" method="POST" style="display:inline">
+                                <button type="submit" class="btn-action btn-refuse">
+                                    <i class="fa-solid fa-times"></i>Refuser
+                                </button>
+                            </form>
+                        </div>
+                        <span th:unless="${d.statut != null and d.statut.name() == 'EN_ATTENTE'}"
+                              style="color:var(--muted);font-size:.78rem">Traitée</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(demandes)}">
+                    <td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">
+                        <i class="fa-solid fa-inbox fa-2x d-block mb-2" style="opacity:.3"></i>
+                        Aucune demande enregistrée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SECTION 4 : HISTORIQUE DES DISTRIBUTIONS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-card">
+        <div class="section-head">
+            <div class="section-head-title">
+                <i class="fa-solid fa-timeline" style="color:#818cf8"></i>
+                Historique des Distributions
+            </div>
+            <a th:href="@{/admin/rapport/download(annee=2026)}"
+               style="display:inline-flex;align-items:center;gap:7px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);color:var(--accent2);border-radius:10px;padding:8px 16px;font-size:.82rem;font-weight:600;text-decoration:none;transition:background .2s"
+               onmouseover="this.style.background='rgba(99,102,241,.2)'"
+               onmouseout="this.style.background='rgba(99,102,241,.1)'">
+                <i class="fa-solid fa-file-pdf"></i>Rapport PDF 2026
+            </a>
+        </div>
+
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Membre</th>
+                    <th>Équipement</th>
+                    <th>Type</th>
+                    <th>Du</th>
+                    <th>Au</th>
+                    <th>Accepté le</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="dist : ${historique}">
+                    <td>
+                        <span class="member-chip">
+                            <i class="fa-solid fa-user" style="font-size:.65rem"></i>
+                            <span th:text="${dist.prenomMembre + ' ' + dist.nomMembre}"></span>
+                        </span>
+                    </td>
+                    <td style="font-size:.85rem">
+                        <span th:if="${dist.materiel != null}" th:text="${dist.materiel.nom}"></span>
+                        <span th:unless="${dist.materiel != null}" style="color:var(--muted)"
+                              th:text="${dist.descriptionDemande}"></span>
+                    </td>
+                    <td>
+                        <span th:if="${dist.typePret != null}"
+                              th:class="${'badge-' + dist.typePret.name()}"
+                              th:text="${dist.typePret == T(com.lias.gestionlabo.models.TypePret).DEFINITIF ? 'Définitif' : 'Temporaire'}"></span>
+                        <span th:unless="${dist.typePret != null}" style="color:var(--muted);font-size:.78rem">—</span>
+                    </td>
+                    <td style="font-size:.8rem;color:var(--muted)"
+                        th:text="${dist.dateDebut != null ? #temporals.format(dist.dateDebut,'dd/MM/yyyy') : '—'}"></td>
+                    <td style="font-size:.8rem;color:var(--muted)"
+                        th:text="${dist.dateFin != null ? #temporals.format(dist.dateFin,'dd/MM/yyyy') : '∞'}"></td>
+                    <td style="font-size:.8rem;color:var(--muted)"
+                        th:text="${dist.dateAcceptation != null ? #temporals.format(dist.dateAcceptation,'dd/MM/yyyy') : '—'}"></td>
+                    <td>
+                        <span th:if="${dist.actif}"
+                              style="color:var(--accent);font-size:.78rem;font-weight:600">
+                            <i class="fa-solid fa-circle" style="font-size:.45rem;margin-right:4px"></i>Actif
+                        </span>
+                        <span th:unless="${dist.actif}"
+                              style="color:var(--muted);font-size:.78rem">Retourné</span>
+                    </td>
+                    <td>
+                        <form th:if="${dist.actif and dist.typePret != null and dist.typePret.name() == 'TEMPORAIRE'}"
+                              th:action="@{/admin/materiel/retour/{id}(id=${dist.id})}" method="POST">
+                            <button type="submit" class="btn-action btn-retour">
+                                <i class="fa-solid fa-rotate-left"></i>Retour
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${historique.isEmpty()}">
+                    <td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">
+                        <i class="fa-solid fa-timeline fa-2x d-block mb-2" style="opacity:.3"></i>
+                        Aucune distribution enregistrée.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+function toggleDateFin() {
+    var type  = document.getElementById('typePretSelect').value;
+    var block = document.getElementById('dateFinBlock');
+    var input = document.getElementById('dateFinInput');
+    if (type === 'DEFINITIF') {
+        block.style.opacity = '.4';
+        input.disabled = true;
+        input.value = '';
+    } else {
+        block.style.opacity = '1';
+        input.disabled = false;
+    }
+}
+toggleDateFin(); // init
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

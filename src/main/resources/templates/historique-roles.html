@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Rôles — LIAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --accent: #3b82f6;
+            --accent2: #6366f1;
+            --accent3: #818cf8;
+            --accent4: #60a5fa;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --border: rgba(255,255,255,0.06);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar-wrapper { width: 250px; flex-shrink: 0; }
+        .main {
+            margin-left: 250px;
+            flex: 1;
+            padding: 32px;
+            max-width: 1200px;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .page-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-sub {
+            color: var(--muted);
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success {
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.2);
+            color: var(--accent);
+        }
+        .alert-info {
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.2);
+            color: var(--accent2);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i { color: var(--accent); }
+
+        /* Rôles actifs grid */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+        }
+        .role-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+        .badge-DIRECTEUR      { background: rgba(59,130,246,0.12); color: #3b82f6; border: 1px solid rgba(59,130,246,0.25); }
+        .badge-VICE_DIRECTEUR { background: rgba(99,102,241,0.12);  color: #6366f1; border: 1px solid rgba(99,102,241,0.25); }
+        .badge-CHEF_EQUIPE    { background: rgba(96,165,250,0.12);  color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+        .badge-MEMBRE         { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+        .role-member-name {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        .role-since {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+        .role-cloturer {
+            margin-top: 4px;
+            background: rgba(248,113,113,0.08);
+            border: 1px solid rgba(248,113,113,0.2);
+            color: #f87171;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            width: fit-content;
+        }
+        .role-cloturer:hover {
+            background: rgba(248,113,113,0.14);
+            color: #fca5a5;
+        }
+        .empty-state {
+            color: var(--muted);
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 14px;
+            align-items: end;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group select,
+        .form-group input[type="date"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group select:focus,
+        .form-group input[type="date"]:focus {
+            border-color: var(--accent);
+        }
+        .form-group select option { background: var(--surface2); color: var(--text); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #0a0e1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { opacity: 0.88; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead th {
+            padding: 12px 16px;
+            text-align: left;
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        tbody td { padding: 12px 16px; vertical-align: middle; }
+        .td-name { font-weight: 600; color: var(--text); }
+        .td-muted { color: var(--muted); font-size: 0.82rem; }
+        .status-actif {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(59,130,246,0.1);
+            color: var(--accent);
+            border: 1px solid rgba(59,130,246,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .status-cloture {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(100,116,139,0.1);
+            color: var(--muted);
+            border: 1px solid rgba(100,116,139,0.15);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot-green { background: var(--accent); }
+        .dot-gray  { background: var(--muted); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-wrapper" th:replace="~{sidebar :: sidebar}"></div>
+
+<main class="main">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Historique des Rôles</h1>
+            <p class="page-sub">Mandats fonctionnels des membres de l'équipe LIAS</p>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="alert alert-success" th:if="${param.success}">
+        <i class="fa-solid fa-circle-check"></i>
+        Rôle assigné avec succès.
+    </div>
+    <div class="alert alert-info" th:if="${param.cloture}">
+        <i class="fa-solid fa-circle-info"></i>
+        Rôle clôturé avec succès.
+    </div>
+
+    <!-- Rôles actifs -->
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-users-gear"></i>
+            Rôles actuellement actifs
+        </div>
+        <div class="roles-grid" th:if="${not #lists.isEmpty(rolesActifs)}">
+            <div class="role-card" th:each="h : ${rolesActifs}">
+                <span th:class="|role-badge badge-${h.role}|" th:text="${h.role}"></span>
+                <div class="role-member-name"
+                     th:text="|${h.membre.prenom} ${h.membre.nom}|"></div>
+                <div class="role-since"
+                     th:text="|Depuis le ${#dates.format(h.dateDebut,'dd/MM/yyyy')}|"></div>
+                <a th:href="|/roles/cloturer/${h.idHistoriqueRole}|"
+                   class="role-cloturer"
+                   onclick="return confirm('Confirmer la clôture de ce rôle ?')">
+                    <i class="fa-solid fa-xmark"></i> Clôturer
+                </a>
+            </div>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(rolesActifs)}">
+            <i class="fa-solid fa-info-circle"></i>
+            Aucun rôle actif pour le moment.
+        </div>
+    </div>
+
+    <!-- Assigner un nouveau rôle -->
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-user-plus"></i>
+            Assigner un nouveau rôle
+        </div>
+        <form action="/roles/assigner" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="membreId">Membre</label>
+                    <select id="membreId" name="membreId" required>
+                        <option value="">— Sélectionner —</option>
+                        <option th:each="m : ${membres}"
+                                th:value="${m.idMembre}"
+                                th:text="|${m.prenom} ${m.nom}|"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="role">Rôle</label>
+                    <select id="role" name="role" required>
+                        <option value="">— Sélectionner —</option>
+                        <option th:each="r : ${rolesMembre}"
+                                th:value="${r}"
+                                th:text="${r}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dateDebut">Date de début</label>
+                    <input type="date" id="dateDebut" name="dateDebut" required
+                           th:value="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}"/>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-plus"></i> Assigner
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Historique complet -->
+    <div class="card">
+        <div class="card-title">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Historique complet
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Membre</th>
+                        <th>Rôle</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(historiques)}">
+                        <td colspan="5" class="empty-state">Aucun historique disponible.</td>
+                    </tr>
+                    <tr th:each="h : ${historiques}">
+                        <td>
+                            <div class="td-name" th:text="|${h.membre.prenom} ${h.membre.nom}|"></div>
+                        </td>
+                        <td>
+                            <span th:class="|role-badge badge-${h.role}|" th:text="${h.role}"></span>
+                        </td>
+                        <td class="td-muted"
+                            th:text="${#dates.format(h.dateDebut,'dd/MM/yyyy')}"></td>
+                        <td class="td-muted"
+                            th:text="${h.dateFin != null} ? ${#dates.format(h.dateFin,'dd/MM/yyyy')} : '—'"></td>
+                        <td>
+                            <span th:if="${h.dateFin == null}" class="status-actif">
+                                <span class="dot dot-green"></span> Actif
+                            </span>
+                            <span th:if="${h.dateFin != null}" class="status-cloture">
+                                <span class="dot dot-gray"></span> Clôturé
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+</body>
+</html>

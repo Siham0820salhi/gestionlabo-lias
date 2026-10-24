@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Procès-Verbaux</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.06); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif; }
+        .main-content { margin-left:250px;padding:32px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px; }
+        .card-dark { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px; }
+        .reunion-card { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;transition:border-color .2s; }
+        .reunion-card:hover { border-color:rgba(59,130,246,0.2); }
+        .reunion-title { font-weight:700;font-size:1rem;margin-bottom:6px; }
+        .reunion-meta { font-size:0.8rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap; }
+        .reunion-ordrejour { margin-top:10px;font-size:0.85rem;color:var(--muted);border-left:2px solid rgba(59,130,246,0.3);padding-left:12px; }
+        .form-control-dark { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 14px;width:100%; }
+        .form-control-dark:focus { border-color:var(--accent);outline:none;box-shadow:none;background:var(--surface2);color:var(--text); }
+        .btn-accent { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:10px;padding:10px 22px;font-weight:700; }
+        .btn-del { background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:5px 10px;font-size:0.8rem;text-decoration:none; }
+        label { font-size:0.82rem;color:var(--muted);margin-bottom:4px;display:block; }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+<div class="main-content">
+    <div class="page-title"><i class="fa-solid fa-clipboard-list me-2"></i>Procès-Verbaux des Réunions</div>
+    <p style="color:var(--muted);margin-bottom:28px">Création, gestion et archivage des PV des réunions</p>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card-dark">
+                <div th:if="${!reunions.isEmpty()}">
+                    <div class="reunion-card" th:each="r : ${reunions}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="reunion-title" th:text="${r.titre}"></div>
+                                <div class="reunion-meta">
+                                    <span><i class="fa-solid fa-calendar me-1"></i>
+                                        <th:block th:text="${r.dateReunion != null ? #temporals.format(r.dateReunion,'dd/MM/yyyy HH:mm') : '-'}"></th:block>
+                                    </span>
+                                    <span><i class="fa-solid fa-map-marker-alt me-1"></i><span th:text="${r.lieu ?: '-'}"></span></span>
+                                    <span th:if="${r.organisateur}"><i class="fa-solid fa-user me-1"></i>
+                                        <span th:text="${r.organisateur.prenom + ' ' + r.organisateur.nom}"></span>
+                                    </span>
+                                </div>
+                                <div class="reunion-ordrejour" th:if="${r.ordreJour}" th:text="${r.ordreJour}"></div>
+                            </div>
+                            <div class="d-flex flex-column align-items-end gap-2">
+                                <a th:if="${r.pvPath}" th:href="'/uploads/pv/' + ${r.pvPath}"
+                                   style="font-size:0.8rem;color:var(--accent2);text-decoration:none" target="_blank">
+                                    <i class="fa-solid fa-file-pdf me-1"></i>PV
+                                </a>
+                                <a th:href="'/reunions/supprimer/' + ${r.id}" class="btn-del"
+                                   onclick="return confirm('Supprimer cette réunion ?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${reunions.isEmpty()}" style="text-align:center;padding:60px 0;color:var(--muted)">
+                    <i class="fa-solid fa-clipboard fa-3x mb-3 d-block"></i>
+                    Aucune réunion enregistrée.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card-dark">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:18px">
+                    <i class="fa-solid fa-plus me-2" style="color:var(--accent)"></i>Créer une Réunion
+                </div>
+                <form method="post" action="/reunions/sauvegarder" enctype="multipart/form-data">
+                    <div class="mb-3"><label>Titre de la réunion</label><input type="text" name="titre" class="form-control-dark" required/></div>
+                    <div class="mb-3"><label>Date et heure</label><input type="datetime-local" name="dateReunion" class="form-control-dark" required/></div>
+                    <div class="mb-3"><label>Lieu</label><input type="text" name="lieu" class="form-control-dark" placeholder="Salle, lien Teams..."/></div>
+                    <div class="mb-3"><label>Ordre du jour</label><textarea name="ordreJour" class="form-control-dark" rows="4" placeholder="Points à aborder..."></textarea></div>
+                    <div class="mb-3"><label>Uploader le PV (PDF)</label><input type="file" name="pvFichier" class="form-control-dark" accept=".pdf"/></div>
+                    <button type="submit" class="btn-accent w-100">Enregistrer la Réunion</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

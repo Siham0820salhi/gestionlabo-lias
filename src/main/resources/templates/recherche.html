@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Recherche Globale</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif; }
+        .main-content { margin-left:250px;padding:32px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px; }
+        .search-big { background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 20px;color:var(--text);font-size:1.1rem;width:100%;margin-bottom:32px; }
+        .search-big:focus { border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+        .card-dark { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:20px; }
+        .result-section-title { font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+        .result-item { background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px;transition:border-color .2s; }
+        .result-item:hover { border-color:rgba(59,130,246,0.2); }
+        .result-name { font-weight:600;font-size:0.9rem; }
+        .result-meta { font-size:0.78rem;color:var(--muted);margin-top:3px; }
+        .count-badge { background:rgba(59,130,246,0.1);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:0.72rem;font-weight:700; }
+        .btn-search { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:10px;padding:12px 28px;font-weight:700;font-size:1rem; }
+        .no-result { color:var(--muted);font-size:0.85rem;padding:12px 0;text-align:center; }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+<div class="main-content">
+    <div class="page-title"><i class="fa-solid fa-magnifying-glass me-2"></i>Recherche Globale</div>
+    <p style="color:var(--muted);margin-bottom:24px">Cherchez parmi les membres, publications, événements et documents</p>
+
+    <form method="get" action="/recherche">
+        <div class="d-flex gap-3 mb-4">
+            <input type="text" name="q" class="search-big" placeholder="Rechercher..." th:value="${q}" autofocus/>
+            <button type="submit" class="btn-search"><i class="fa-solid fa-search me-2"></i>Chercher</button>
+        </div>
+    </form>
+
+    <div th:if="${q != null}">
+
+        <!-- Membres -->
+        <div class="card-dark" th:if="${membres != null}">
+            <div class="result-section-title">
+                <i class="fa-solid fa-users" style="color:var(--accent2)"></i>
+                Membres
+                <span class="count-badge" th:text="${membres.size()}"></span>
+            </div>
+            <div th:each="m : ${membres}" class="result-item">
+                <div class="result-name" th:text="${m.prenom + ' ' + m.nom}"></div>
+                <div class="result-meta">
+                    <span th:text="${m.email}"></span> — <span th:text="${m.statutActuel}"></span>
+                    <span th:if="${m.equipeActuelle}"> — <span th:text="${m.equipeActuelle}"></span></span>
+                </div>
+            </div>
+            <div th:if="${membres.isEmpty()}" class="no-result">Aucun membre trouvé</div>
+        </div>
+
+        <!-- Publications -->
+        <div class="card-dark" th:if="${publications != null}">
+            <div class="result-section-title">
+                <i class="fa-solid fa-book" style="color:var(--accent3)"></i>
+                Publications
+                <span class="count-badge" th:text="${publications.size()}"></span>
+            </div>
+            <div th:each="p : ${publications}" class="result-item">
+                <div class="result-name" th:text="${p.titre}"></div>
+                <div class="result-meta">
+                    <span th:text="${p.auteurs}"></span> — <span th:text="${p.annee}"></span>
+                    <span th:if="${p.equipe}"> — <span th:text="${p.equipe}"></span></span>
+                </div>
+            </div>
+            <div th:if="${publications.isEmpty()}" class="no-result">Aucune publication trouvée</div>
+        </div>
+
+        <!-- Événements -->
+        <div class="card-dark" th:if="${evenements != null}">
+            <div class="result-section-title">
+                <i class="fa-solid fa-calendar-days" style="color:var(--accent4)"></i>
+                Événements
+                <span class="count-badge" th:text="${evenements.size()}"></span>
+            </div>
+            <div th:each="e : ${evenements}" class="result-item">
+                <div class="result-name" th:text="${e.titre}"></div>
+                <div class="result-meta">
+                    <span th:text="${e.type}"></span> — <span th:text="${e.lieu}"></span>
+                    — <span th:text="${e.date}"></span>
+                </div>
+            </div>
+            <div th:if="${evenements.isEmpty()}" class="no-result">Aucun événement trouvé</div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card-dark" th:if="${documents != null}">
+            <div class="result-section-title">
+                <i class="fa-solid fa-folder-open" style="color:var(--accent)"></i>
+                Documents
+                <span class="count-badge" th:text="${documents.size()}"></span>
+            </div>
+            <div th:each="d : ${documents}" class="result-item">
+                <div class="result-name" th:text="${d.nom}"></div>
+                <div class="result-meta">
+                    <span th:text="${d.type}"></span>
+                    <span th:if="${d.dateUpload}"> — <span th:text="${#temporals.format(d.dateUpload,'dd/MM/yyyy')}"></span></span>
+                </div>
+            </div>
+            <div th:if="${documents.isEmpty()}" class="no-result">Aucun document trouvé</div>
+        </div>
+    </div>
+
+    <div th:if="${q == null}" style="text-align:center;padding:80px 0;color:var(--muted)">
+        <i class="fa-solid fa-magnifying-glass fa-4x mb-4 d-block" style="opacity:0.3"></i>
+        <p style="font-size:1.1rem">Tapez un mot-clé pour rechercher dans toute la base de données</p>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

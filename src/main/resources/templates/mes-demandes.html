@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Mes Demandes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,#818cf8,var(--accent4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-top:4px;}
+
+        .btn-new{background:linear-gradient(135deg,#818cf8,var(--accent4));color:#0a0e1a;border:none;border-radius:10px;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .3s;}
+        .btn-new:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(251,146,60,.35);color:#0a0e1a;}
+
+        /* Cards instead of table for personal view */
+        .demande-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:14px;transition:all .3s;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+        .demande-card:hover{border-color:rgba(255,255,255,.1);transform:translateY(-2px);}
+
+        .demande-icon{width:46px;height:46px;border-radius:12px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);display:flex;align-items:center;justify-content:center;color:#818cf8;font-size:1rem;flex-shrink:0;}
+        .demande-info{flex:1;min-width:200px;}
+        .demande-desc{font-weight:600;margin-bottom:6px;line-height:1.4;}
+        .demande-date{color:var(--muted);font-size:.8rem;display:flex;align-items:center;gap:6px;}
+
+        .badge-EN_ATTENTE{background:rgba(96,165,250,.12);color:var(--accent4);border:1px solid rgba(96,165,250,.2);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+        .badge-ACCEPTEE{background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+        .badge-REFUSEE{background:rgba(248,113,113,.1);color:#fca5a5;border:1px solid rgba(248,113,113,.2);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+
+        .empty-state{text-align:center;padding:64px;color:var(--muted);}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <div class="page-title">Mes Demandes de Matériel</div>
+            <div class="page-sub">Historique de toutes vos demandes d'équipement</div>
+        </div>
+        <a href="/demande-materiel" class="btn-new">
+            <i class="fa-solid fa-plus"></i>Nouvelle demande
+        </a>
+    </div>
+
+    <div th:if="${mesDemandes != null and !mesDemandes.isEmpty()}">
+        <div th:each="d : ${mesDemandes}" class="demande-card">
+            <div class="demande-icon"><i class="fa-solid fa-tools"></i></div>
+            <div class="demande-info">
+                <div class="demande-desc" th:text="${d.description}"></div>
+                <div class="demande-date">
+                    <i class="fa-solid fa-calendar"></i>
+                    <span th:text="${#temporals.format(d.dateDemande, 'dd/MM/yyyy')}"></span>
+                </div>
+            </div>
+            <span th:class="${'badge-' + (d.statut != null ? d.statut.name() : 'EN_ATTENTE')}" th:text="${d.statut}"></span>
+        </div>
+    </div>
+
+    <div th:if="${mesDemandes == null or mesDemandes.isEmpty()}" class="empty-state">
+        <i class="fa-solid fa-inbox fa-3x d-block mb-3" style="opacity:.25"></i>
+        <p style="margin-bottom:16px">Aucune demande soumise pour le moment.</p>
+        <a href="/demande-materiel" class="btn-new">
+            <i class="fa-solid fa-plus"></i>Faire une demande
+        </a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

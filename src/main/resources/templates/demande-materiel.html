@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Demande de Matériel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent4),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-bottom:32px;}
+
+        .form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:700px;position:relative;}
+        .form-card::before{content:'';position:absolute;top:-1px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--accent4),var(--accent3),transparent);}
+
+        .section-label{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent4);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+
+        .field-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+        .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:border-color .2s;margin-bottom:18px;}
+        .form-input:focus{outline:none;border-color:rgba(96,165,250,.4);box-shadow:0 0 0 3px rgba(96,165,250,.07);}
+        .form-input::placeholder{color:var(--muted);}
+        .form-input:disabled{opacity:.6;cursor:not-allowed;}
+        textarea.form-input{resize:vertical;}
+        select.form-input option{background:var(--surface2);}
+
+        .btn-submit{background:linear-gradient(135deg,var(--accent4),var(--accent3));color:#0a0e1a;border:none;border-radius:12px;padding:13px 32px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(96,165,250,.35);}
+
+        /* Alerte accès refusé */
+        .access-denied{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:16px;padding:28px;max-width:600px;text-align:center;}
+        .access-denied-icon{font-size:2.5rem;color:#fca5a5;margin-bottom:14px;}
+        .access-denied h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fca5a5;margin-bottom:10px;}
+        .access-denied p{color:var(--muted);font-size:.9rem;line-height:1.6;}
+
+        #dateFinRow{transition:opacity .2s;}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-title">Demande de Matériel</div>
+    <div class="page-sub">Soumettez une demande d'équipement ou de matériel au laboratoire</div>
+
+    <!-- ── Accès refusé (ASSOCIE / RETRAITE / ANCIEN) ── -->
+    <div th:if="${accesRefuse}" class="access-denied">
+        <div class="access-denied-icon"><i class="fa-solid fa-ban"></i></div>
+        <h3>Accès non autorisé</h3>
+        <p>
+            Seuls les membres <strong>Permanent</strong> et <strong>Doctorant</strong>
+            peuvent emprunter du matériel.<br>
+            Les membres Associé, Retraité ou Ancien n'ont pas accès à cette fonctionnalité.
+        </p>
+        <a href="/dashboard" style="display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.25);color:#fca5a5;border-radius:10px;padding:9px 20px;text-decoration:none;font-weight:600;font-size:.88rem">
+            <i class="fa-solid fa-arrow-left"></i>Retour au dashboard
+        </a>
+    </div>
+
+    <!-- ── Formulaire (visible uniquement si accès accordé) ── -->
+    <div th:unless="${accesRefuse}" class="form-card">
+
+        <div class="section-label">
+            <i class="fa-solid fa-tools"></i>Informations de la demande
+        </div>
+
+        <form th:action="@{/demande-materiel}" method="POST" th:object="${demande}">
+
+            <label class="field-label">Demandeur</label>
+            <input type="text" class="form-input"
+                   th:value="${membre != null ? membre.nom + ' ' + membre.prenom : ''}"
+                   disabled>
+
+            <label class="field-label">Description des besoins *</label>
+            <textarea class="form-input" th:field="*{description}" rows="4"
+                      placeholder="Décrivez le matériel nécessaire : quantité, spécifications..." required></textarea>
+
+            <div class="row g-3" style="margin-bottom:0">
+                <div class="col-md-6">
+                    <label class="field-label">Département *</label>
+                    <input type="text" class="form-input" th:field="*{departement}"
+                           placeholder="Ex: Informatique" required style="margin-bottom:0">
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Filière *</label>
+                    <input type="text" class="form-input" th:field="*{filiere}"
+                           placeholder="Ex: Master Big Data" required style="margin-bottom:0">
+                </div>
+            </div>
+            <div style="margin-bottom:18px"></div>
+
+            <!-- ── Type de prêt ── -->
+            <div class="section-label" style="margin-top:4px">
+                <i class="fa-solid fa-clock-rotate-left"></i>Type de prêt souhaité
+            </div>
+
+            <div class="row g-3" style="margin-bottom:0">
+                <div class="col-md-4">
+                    <label class="field-label">Type *</label>
+                    <select class="form-input" th:field="*{typePret}" id="typePretSelect"
+                            onchange="toggleDateFin()" style="margin-bottom:0">
+                        <option value="TEMPORAIRE">Temporaire</option>
+                        <option value="DEFINITIF">Définitif</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="field-label">Date début</label>
+                    <input type="date" class="form-input" th:field="*{dateDebutSouhaitee}" style="margin-bottom:0">
+                </div>
+                <div class="col-md-4" id="dateFinRow">
+                    <label class="field-label">Date fin</label>
+                    <input type="date" class="form-input" th:field="*{dateFinSouhaitee}"
+                           id="dateFinInput" style="margin-bottom:0">
+                </div>
+            </div>
+            <div style="margin-bottom:24px"></div>
+
+            <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-paper-plane"></i>Envoyer la demande
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleDateFin() {
+    var type  = document.getElementById('typePretSelect').value;
+    var row   = document.getElementById('dateFinRow');
+    var input = document.getElementById('dateFinInput');
+    if (type === 'DEFINITIF') {
+        row.style.opacity = '.4';
+        input.disabled = true;
+        input.value = '';
+    } else {
+        row.style.opacity = '1';
+        input.disabled = false;
+    }
+}
+toggleDateFin();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

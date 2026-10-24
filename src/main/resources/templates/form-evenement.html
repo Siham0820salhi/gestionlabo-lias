@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Nouvel Événement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent3),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-bottom:32px;}
+
+        .form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:760px;position:relative;}
+        .form-card::before{content:'';position:absolute;top:-1px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--accent3),var(--accent2),transparent);}
+
+        .section-label{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent3);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+
+        .field-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+        .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:border-color .2s;margin-bottom:18px;}
+        .form-input:focus{outline:none;border-color:rgba(129,140,248,.4);box-shadow:0 0 0 3px rgba(129,140,248,.07);}
+        .form-input::placeholder{color:var(--muted);}
+        textarea.form-input{resize:vertical;}
+        select.form-input option{background:var(--surface2);}
+
+        .btn-submit{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#0a0e1a;border:none;border-radius:12px;padding:13px 32px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(129,140,248,.35);}
+
+        .btn-cancel{background:rgba(100,116,139,.1);border:1px solid rgba(100,116,139,.2);color:var(--muted);border-radius:12px;padding:13px 24px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+        .btn-cancel:hover{background:rgba(100,116,139,.2);color:var(--text);}
+
+        /* Type cards selector */
+        .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+        .type-option{display:none;}
+        .type-label{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:center;transition:all .2s;}
+        .type-label:hover{border-color:rgba(129,140,248,.3);}
+        .type-option:checked + .type-label{border-color:var(--accent3);background:rgba(129,140,248,.08);}
+        .type-icon{font-size:1.2rem;margin-bottom:6px;display:block;}
+        .type-name{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;}
+        .type-CONFERENCE .type-icon{color:var(--accent);}
+        .type-CONFERENCE .type-name{color:var(--accent);}
+        .type-SEMINAIRE .type-icon{color:var(--accent2);}
+        .type-SEMINAIRE .type-name{color:var(--accent2);}
+        .type-WORKSHOP .type-icon{color:var(--accent3);}
+        .type-WORKSHOP .type-name{color:var(--accent3);}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-title">Nouvel Événement Scientifique</div>
+    <div class="page-sub">Enregistrez une conférence, un séminaire ou un workshop</div>
+
+    <div class="form-card">
+        <form th:action="@{/evenements/sauvegarder}" th:object="${evenement}" method="POST">
+
+            <!-- Section 1 -->
+            <div class="section-label">
+                <i class="fa-solid fa-circle-info"></i>Informations principales
+            </div>
+
+            <label class="field-label">Titre de l'événement *</label>
+            <input type="text" class="form-input" th:field="*{titre}"
+                   placeholder="Ex: Conférence internationale sur l'IA" required>
+
+            <label class="field-label">Type *</label>
+            <div class="type-grid">
+                <div th:each="t : ${types}">
+                    <input type="radio" th:id="${'type_' + t}" name="type" th:value="${t}" class="type-option" required>
+                    <label th:for="${'type_' + t}"
+                           th:class="${'type-label type-' + t}">
+                        <span class="type-icon">
+                            <i th:class="${t.name() == 'CONFERENCE' ? 'fa-solid fa-microphone' :
+                                          (t.name() == 'SEMINAIRE' ? 'fa-solid fa-chalkboard-teacher' :
+                                           'fa-solid fa-screwdriver-wrench')}"></i>
+                        </span>
+                        <span class="type-name" th:text="${t}"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="section-label" style="margin-top:8px">
+                <i class="fa-solid fa-map-marker-alt"></i>Date, Lieu & Édition
+            </div>
+
+            <div class="row g-3" style="margin-bottom:0">
+                <div class="col-md-5">
+                    <label class="field-label">Date *</label>
+                    <input type="date" class="form-input" th:field="*{date}" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="field-label">Lieu *</label>
+                    <input type="text" class="form-input" th:field="*{lieu}"
+                           placeholder="Ex: Faculté Ben M'Sik, Casablanca" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="field-label">Édition</label>
+                    <input type="number" class="form-input" th:field="*{edition}" min="0" placeholder="0">
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div class="section-label">
+                <i class="fa-solid fa-align-left"></i>Description
+            </div>
+
+            <label class="field-label">Description de l'événement</label>
+            <textarea class="form-input" th:field="*{description}" rows="4"
+                      placeholder="Objectifs, programme, thèmes abordés..."></textarea>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-calendar-plus"></i>Enregistrer l'événement
+                </button>
+                <a href="/evenements" class="btn-cancel">
+                    <i class="fa-solid fa-arrow-left"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

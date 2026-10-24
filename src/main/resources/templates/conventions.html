@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Conventions & Collaborations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif; }
+        .main-content { margin-left:250px;padding:32px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px; }
+        .card-dark { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px; }
+        .section-title { font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:16px; }
+        .conv-card { background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;transition:border-color .2s; }
+        .conv-card:hover { border-color:rgba(59,130,246,0.2); }
+        .conv-title { font-weight:600;font-size:0.95rem;margin-bottom:6px; }
+        .conv-meta { font-size:0.78rem;color:var(--muted); }
+        .badge-active { background:rgba(59,130,246,0.1);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600; }
+        .badge-inactive { background:rgba(248,113,113,0.1);color:#f87171;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600; }
+        .form-control-dark,.form-select-dark { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 14px;width:100%; }
+        .form-control-dark:focus,.form-select-dark:focus { border-color:var(--accent);outline:none;box-shadow:none;background:var(--surface2);color:var(--text); }
+        .form-select-dark option { background:var(--surface2); }
+        .btn-accent { background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:10px;padding:10px 22px;font-weight:700; }
+        .btn-del { background:rgba(248,113,113,0.1);color:#f87171;border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:5px 10px;font-size:0.8rem;text-decoration:none; }
+        label { font-size:0.82rem;color:var(--muted);margin-bottom:4px;display:block; }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+<div class="main-content">
+    <div class="page-title"><i class="fa-solid fa-handshake me-2"></i>Conventions & Collaborations</div>
+    <p style="color:var(--muted);margin-bottom:28px">Gestion des partenaires et conventions du laboratoire</p>
+
+    <div class="row g-4">
+        <!-- Partenaires -->
+        <div class="col-lg-4">
+            <div class="card-dark">
+                <div class="section-title"><i class="fa-solid fa-building me-2" style="color:var(--accent2)"></i>Partenaires</div>
+                <div th:each="p : ${partenaires}" class="conv-card">
+                    <div class="conv-title" th:text="${p.nom}"></div>
+                    <div class="conv-meta">
+                        <span th:text="${p.type}"></span> — <span th:text="${p.pays}"></span>
+                    </div>
+                </div>
+                <div th:if="${partenaires.isEmpty()}" style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 0">
+                    Aucun partenaire enregistré.
+                </div>
+            </div>
+
+            <div class="card-dark">
+                <div class="section-title"><i class="fa-solid fa-plus me-2" style="color:var(--accent)"></i>Nouveau Partenaire</div>
+                <form method="post" action="/conventions/partenaire/sauvegarder">
+                    <div class="mb-2"><label>Nom</label><input type="text" name="nom" class="form-control-dark" required/></div>
+                    <div class="mb-2"><label>Type</label><input type="text" name="type" class="form-control-dark" placeholder="Université, Entreprise..."/></div>
+                    <div class="mb-2"><label>Pays</label><input type="text" name="pays" class="form-control-dark"/></div>
+                    <div class="mb-2"><label>Email</label><input type="email" name="email" class="form-control-dark"/></div>
+                    <div class="mb-3"><label>Site Web</label><input type="text" name="siteWeb" class="form-control-dark"/></div>
+                    <button type="submit" class="btn-accent w-100">Ajouter Partenaire</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Conventions -->
+        <div class="col-lg-8">
+            <div class="card-dark">
+                <div class="section-title"><i class="fa-solid fa-file-signature me-2" style="color:var(--accent3)"></i>Conventions</div>
+                <div th:each="c : ${conventions}" class="conv-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="conv-title" th:text="${c.titre}"></div>
+                            <div class="conv-meta">
+                                <i class="fa-solid fa-building me-1"></i>
+                                <span th:text="${c.partenaire != null ? c.partenaire.nom : 'N/A'}"></span>
+                                &nbsp;|&nbsp;
+                                <i class="fa-solid fa-calendar me-1"></i>
+                                <span th:text="${c.dateDebut != null ? #temporals.format(c.dateDebut,'dd/MM/yyyy') : '-'}"></span>
+                                →
+                                <span th:text="${c.dateFin != null ? #temporals.format(c.dateFin,'dd/MM/yyyy') : 'En cours'}"></span>
+                            </div>
+                            <div class="mt-2" th:if="${c.description}" style="font-size:0.82rem;color:var(--muted)" th:text="${c.description}"></div>
+                        </div>
+                        <div class="d-flex flex-column align-items-end gap-2">
+                            <span th:if="${c.active}" class="badge-active">Active</span>
+                            <span th:unless="${c.active}" class="badge-inactive">Terminée</span>
+                            <a th:if="${c.documentPath}" th:href="'/uploads/conventions/' + ${c.documentPath}"
+                               style="font-size:0.78rem;color:var(--accent2)" target="_blank">
+                                <i class="fa-solid fa-file-pdf me-1"></i>Document
+                            </a>
+                            <a th:href="'/conventions/supprimer/' + ${c.id}" class="btn-del"
+                               onclick="return confirm('Supprimer ?')"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${conventions.isEmpty()}" style="color:var(--muted);text-align:center;padding:40px 0">
+                    Aucune convention enregistrée.
+                </div>
+            </div>
+
+            <div class="card-dark">
+                <div class="section-title"><i class="fa-solid fa-plus me-2" style="color:var(--accent)"></i>Nouvelle Convention</div>
+                <form method="post" action="/conventions/sauvegarder" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <div class="col-md-6"><label>Titre</label><input type="text" name="titre" class="form-control-dark" required/></div>
+                        <div class="col-md-6">
+                            <label>Partenaire</label>
+                            <select name="partenaireId" class="form-select-dark">
+                                <option value="">Sélectionner...</option>
+                                <option th:each="p : ${partenaires}" th:value="${p.id}" th:text="${p.nom}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3"><label>Date début</label><input type="date" name="dateDebut" class="form-control-dark"/></div>
+                        <div class="col-md-3"><label>Date fin</label><input type="date" name="dateFin" class="form-control-dark"/></div>
+                        <div class="col-md-6"><label>Document PDF</label><input type="file" name="document" class="form-control-dark"/></div>
+                        <div class="col-12"><label>Description</label><textarea name="description" class="form-control-dark" rows="2"></textarea></div>
+                        <div class="col-12"><button type="submit" class="btn-accent">Créer la Convention</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<div th:fragment="sidebar" id="sb-wrapper">
+
+<!-- ① Init thème AVANT tout rendu → zéro flash -->
+<script>if(localStorage.getItem('lias-theme')==='light'){document.documentElement.classList.add('light-mode');}</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+
+/* ═══════════════════════════════════════════════════
+   LIGHT MODE — variables globales (s'appliquent à
+   TOUTES les pages via les CSS vars déjà utilisées)
+   Spécificité html.light-mode (0-1-1) > :root (0-1-0)
+═══════════════════════════════════════════════════ */
+html.light-mode {
+    --bg:      #f4f7fb;
+    --surface: #ffffff;
+    --surface2:#eef2f9;
+    --text:    #0f172a;
+    --muted:   #1e293b;
+    --border:  rgba(0,0,0,0.08);
+    --accent:  #1d4ed8;
+    --accent2: #4338ca;
+    --accent3: #3b82f6;
+    --accent4: #2563eb;
+}
+
+/* ── Forcer body + tout le contenu principal en noir ── */
+html.light-mode body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+html.light-mode .main-content {
+    color: var(--text);
+}
+
+/* Tous les éléments texte standard dans .main-content héritent du noir */
+html.light-mode .main-content p,
+html.light-mode .main-content span,
+html.light-mode .main-content td,
+html.light-mode .main-content th,
+html.light-mode .main-content label,
+html.light-mode .main-content small,
+html.light-mode .main-content div,
+html.light-mode .main-content h1,
+html.light-mode .main-content h2,
+html.light-mode .main-content h3,
+html.light-mode .main-content h4,
+html.light-mode .main-content h5,
+html.light-mode .main-content h6 {
+    color: var(--text) !important;
+    -webkit-text-fill-color: var(--text) !important;
+    background-image: none !important;
+    -webkit-background-clip: unset !important;
+}
+
+/* Exceptions : liens colorés, badges et icônes gardent leur couleur */
+html.light-mode .main-content a[href],
+html.light-mode .main-content .year-badge,
+html.light-mode .main-content .membre-chip,
+html.light-mode .main-content .equipe-chip,
+html.light-mode .main-content i.fa-solid,
+html.light-mode .main-content i.fa-regular,
+html.light-mode .main-content .btn-add,
+html.light-mode .main-content .btn-submit,
+html.light-mode .main-content button {
+    color: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-image: unset !important;
+    -webkit-background-clip: unset !important;
+}
+
+/* Texte gradient inline → lisible */
+html.light-mode [style*="-webkit-text-fill-color: transparent"],
+html.light-mode [style*="-webkit-text-fill-color:transparent"] {
+    -webkit-text-fill-color: var(--text) !important;
+    background: none !important;
+    color: var(--text) !important;
+}
+
+/* Classes gradient CSS (.page-title, .hero-title .grad, etc.) */
+html.light-mode .page-title,
+html.light-mode .card-title,
+html.light-mode .section-title {
+    color: var(--accent) !important;
+    -webkit-text-fill-color: var(--accent) !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+}
+
+/* Forcer le padding-top sur toutes les .main-content pour laisser la place à la topbar */
+body .main-content {
+    padding-top: 92px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR (colonne gauche)
+═══════════════════════════════════════════════════ */
+#sb-wrapper {
+    position: fixed;
+    top: 0; left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #0d1117;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    font-family: 'DM Sans', sans-serif;
+    overflow-y: auto;
+    transition: background .25s, border-color .25s;
+}
+html.light-mode #sb-wrapper {
+    background: #ffffff;
+    border-right-color: rgba(0,0,0,0.09);
+}
+
+/* Logo */
+.sb-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: border-color .25s;
+}
+html.light-mode .sb-logo { border-bottom-color: rgba(0,0,0,0.08); }
+.sb-logo-inner { display: flex; align-items: center; gap: 12px; }
+.sb-logo-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg,#3b82f6,#6366f1);
+    display: flex; align-items: center; justify-content: center;
+    color: #0a0e1a; font-size: 1rem; flex-shrink: 0;
+}
+.sb-logo-text {
+    font-family: 'Syne',sans-serif; font-size: 1.1rem; font-weight: 800;
+    background: linear-gradient(90deg,#3b82f6,#6366f1);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+}
+html.light-mode .sb-logo-text {
+    background: linear-gradient(90deg,#1d4ed8,#4338ca);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sb-logo-sub { font-size: .68rem; color: #475569; margin-top: 1px; }
+html.light-mode .sb-logo-sub { color: #94a3b8; }
+
+/* Nav */
+.sb-nav { padding: 16px 12px; flex: 1; }
+
+.sb-section-label {
+    font-size: .65rem; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: #334155; padding: 12px 10px 6px;
+    transition: color .25s;
+}
+html.light-mode .sb-section-label { color: #94a3b8; }
+
+.sb-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 10px;
+    text-decoration: none; color: #64748b;
+    font-size: .875rem; font-weight: 500;
+    transition: all .2s; margin-bottom: 2px;
+}
+.sb-link:hover { background: rgba(255,255,255,.05); color: #e2e8f0; }
+html.light-mode .sb-link:hover { background: rgba(0,0,0,.05); color: #0f172a; }
+.sb-link.active { background: rgba(59,130,246,.1); color: #3b82f6; }
+html.light-mode .sb-link.active { background: rgba(29,78,216,.1); color: #1d4ed8; }
+
+.sb-link .sb-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; flex-shrink: 0;
+    background: rgba(255,255,255,.04); transition: all .2s;
+}
+.sb-link:hover .sb-icon { background: rgba(255,255,255,.08); }
+html.light-mode .sb-link .sb-icon { background: rgba(0,0,0,.05); }
+html.light-mode .sb-link:hover .sb-icon { background: rgba(0,0,0,.09); }
+
+/* Icon couleurs */
+.ic-dashboard{color:#3b82f6} .ic-membres{color:#6366f1} .ic-pub{color:#818cf8}
+.ic-materiel{color:#60a5fa}  .ic-demande{color:#818cf8}  .ic-adhesion{color:#818cf8}
+.ic-mandat{color:#60a5fa}    .ic-profil{color:#94a3b8}   .ic-event{color:#6366f1}
+.ic-doc{color:#60a5fa}       .ic-conv{color:#60a5fa}     .ic-pv{color:#60a5fa}
+.ic-msg{color:#818cf8}       .ic-notif{color:#60a5fa}    .ic-recherche{color:#6366f1}
+.ic-cal{color:#3b82f6}
+
+.sb-divider {
+    height: 1px; background: rgba(255,255,255,.05);
+    margin: 10px; transition: background .25s;
+}
+html.light-mode .sb-divider { background: rgba(0,0,0,.07); }
+
+/* Footer */
+.sb-footer {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255,255,255,.06);
+    transition: border-color .25s;
+}
+html.light-mode .sb-footer { border-top-color: rgba(0,0,0,.08); }
+
+.sb-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; border-radius: 12px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06);
+    cursor: pointer; position: relative;
+    transition: background .2s, border-color .25s;
+}
+.sb-user:hover { background: rgba(255,255,255,.06); }
+html.light-mode .sb-user { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.09); }
+html.light-mode .sb-user:hover { background: rgba(0,0,0,.08); }
+
+.sb-avatar {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg,#3b82f6,#6366f1);
+    display: flex; align-items: center; justify-content: center;
+    color: #0a0e1a; font-size: .85rem; font-weight: 700; flex-shrink: 0;
+}
+.sb-user-info { flex: 1; min-width: 0; }
+.sb-user-name {
+    font-size: .82rem; font-weight: 600; color: #e2e8f0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: color .25s;
+}
+html.light-mode .sb-user-name { color: #0f172a; }
+.sb-user-role { font-size: .7rem; color: #475569; }
+html.light-mode .sb-user-role { color: #64748b; }
+
+.sb-user-actions {
+    display: none; position: absolute; bottom: 100%; left: 0; right: 0;
+    background: #1a2235; border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; margin-bottom: 6px; overflow: hidden; z-index: 100;
+    transition: background .25s, border-color .25s;
+}
+html.light-mode .sb-user-actions {
+    background: #fff; border-color: rgba(0,0,0,.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+}
+.sb-user:hover .sb-user-actions { display: block; }
+
+.sb-user-action-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; text-decoration: none;
+    color: #94a3b8; font-size: .83rem; transition: all .2s;
+}
+.sb-user-action-link:hover { background: rgba(255,255,255,.05); color: #e2e8f0; }
+html.light-mode .sb-user-action-link { color: #475569; }
+html.light-mode .sb-user-action-link:hover { background: rgba(0,0,0,.04); color: #0f172a; }
+.sb-user-action-link.logout { color: #f87171; }
+.sb-user-action-link.logout:hover { background: rgba(248,113,113,.08); }
+
+/* ═══════════════════════════════════════════════════
+   TOPBAR — barre fixe EN HAUT du contenu (toutes pages)
+   position:fixed fonctionne depuis l'intérieur d'un
+   parent fixed SAUF si parent a transform/perspective/filter
+═══════════════════════════════════════════════════ */
+#sb-topbar {
+    position: fixed;
+    top: 0; left: 250px; right: 0;
+    height: 60px;
+    background: #0d1117;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 28px;
+    gap: 14px;
+    z-index: 998;
+    transition: background .25s, border-color .25s;
+    font-family: 'DM Sans', sans-serif;
+}
+html.light-mode #sb-topbar {
+    background: #ffffff;
+    border-bottom-color: rgba(0,0,0,.09);
+    box-shadow: 0 1px 8px rgba(0,0,0,.06);
+}
+
+/* Bouton toggle thème dans la topbar */
+.topbar-theme-btn {
+    display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 22px;
+    padding: 7px 16px;
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: .8rem; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .2s;
+    white-space: nowrap;
+}
+.topbar-theme-btn:hover {
+    background: rgba(59,130,246,.12);
+    border-color: rgba(59,130,246,.3);
+    color: #3b82f6;
+}
+html.light-mode .topbar-theme-btn {
+    background: rgba(0,0,0,.05);
+    border-color: rgba(0,0,0,.12);
+    color: #475569;
+}
+html.light-mode .topbar-theme-btn:hover {
+    background: rgba(29,78,216,.1);
+    border-color: rgba(29,78,216,.3);
+    color: #1d4ed8;
+}
+
+/* Pill compte utilisateur dans la topbar */
+.topbar-user-pill {
+    display: flex; align-items: center; gap: 9px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px;
+    padding: 6px 14px 6px 6px;
+    transition: background .25s, border-color .25s;
+}
+html.light-mode .topbar-user-pill {
+    background: rgba(0,0,0,.04);
+    border-color: rgba(0,0,0,.1);
+}
+.topbar-user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg,#3b82f6,#6366f1);
+    display: flex; align-items: center; justify-content: center;
+    color: #0a0e1a; font-size: .72rem; font-weight: 700;
+}
+.topbar-user-name {
+    font-size: .82rem; font-weight: 500; color: #e2e8f0;
+    transition: color .25s;
+}
+html.light-mode .topbar-user-name { color: #0f172a; }
+
+</style>
+
+<!-- ② Sidebar : Logo -->
+<div class="sb-logo">
+    <div class="sb-logo-inner">
+        <div class="sb-logo-icon"><i class="fa-solid fa-flask-vial"></i></div>
+        <div>
+            <div class="sb-logo-text">Labo LIAS</div>
+            <div class="sb-logo-sub">Faculté Ben M'Sik</div>
+        </div>
+    </div>
+</div>
+
+<!-- ③ Sidebar : Navigation -->
+<nav class="sb-nav">
+
+    <div class="sb-section-label">Principal</div>
+    <a href="/dashboard" class="sb-link">
+        <span class="sb-icon ic-dashboard"><i class="fa-solid fa-chart-line"></i></span>Dashboard
+    </a>
+    <a href="/profil" class="sb-link">
+        <span class="sb-icon ic-profil"><i class="fa-solid fa-user-edit"></i></span>Mon Profil
+    </a>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">Scientifique</div>
+    <a href="/publications" class="sb-link">
+        <span class="sb-icon ic-pub"><i class="fa-solid fa-book"></i></span>Publications
+    </a>
+    <a href="/evenements" class="sb-link">
+        <span class="sb-icon ic-event"><i class="fa-solid fa-calendar-days"></i></span>Événements
+    </a>
+    <a href="/evenements/calendrier" class="sb-link">
+        <span class="sb-icon ic-cal"><i class="fa-solid fa-calendar-check"></i></span>Calendrier
+    </a>
+    <a href="/documents" class="sb-link">
+        <span class="sb-icon ic-doc"><i class="fa-solid fa-folder-open"></i></span>Documents
+    </a>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">Collaboration</div>
+    <a href="/messages" class="sb-link">
+        <span class="sb-icon ic-msg"><i class="fa-solid fa-comments"></i></span>Messages
+    </a>
+    <a href="/conventions" class="sb-link"
+       sec:authorize="hasAnyAuthority('PERMANENT','ROLE_PERMANENT','ROLE_DIRECTEUR','DIRECTEUR')">
+        <span class="sb-icon ic-conv"><i class="fa-solid fa-handshake"></i></span>Conventions
+    </a>
+    <a href="/reunions" class="sb-link"
+       sec:authorize="hasAnyAuthority('PERMANENT','ROLE_PERMANENT','ROLE_DIRECTEUR','DIRECTEUR')">
+        <span class="sb-icon ic-pv"><i class="fa-solid fa-clipboard-list"></i></span>Procès-Verbaux
+    </a>
+    <a href="/notifications" class="sb-link">
+        <span class="sb-icon ic-notif"><i class="fa-solid fa-bell"></i></span>Notifications
+    </a>
+    <a href="/recherche" class="sb-link">
+        <span class="sb-icon ic-recherche"><i class="fa-solid fa-magnifying-glass"></i></span>Recherche
+    </a>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">Matériel</div>
+    <a href="/demande-materiel" class="sb-link">
+        <span class="sb-icon ic-materiel"><i class="fa-solid fa-tools"></i></span>Demander Matériel
+    </a>
+    <a href="/mes-demandes" class="sb-link">
+        <span class="sb-icon ic-demande"><i class="fa-solid fa-list-check"></i></span>Mes Demandes
+    </a>
+    <a href="/admin/demandes" class="sb-link" th:if="${isDirecteurActif}">
+        <span class="sb-icon" style="color:#60a5fa"><i class="fa-solid fa-clipboard-check"></i></span>Gestion Matériel
+    </a>
+
+    <div sec:authorize="hasAnyAuthority('PERMANENT','ROLE_PERMANENT','ADMIN','ROLE_ADMIN','ROLE_DIRECTEUR','DIRECTEUR')">
+        <div class="sb-divider"></div>
+        <div class="sb-section-label">Administration</div>
+        <a href="/membres" class="sb-link">
+            <span class="sb-icon ic-membres"><i class="fa-solid fa-users"></i></span>Gestion Membres
+        </a>
+        <a href="/demandes" class="sb-link" th:if="${isDirecteurActif or isAdminActif}">
+            <span class="sb-icon ic-adhesion"><i class="fa-solid fa-clipboard-list"></i></span>Demandes Adhésion
+        </a>
+        <a href="/mandats" class="sb-link" th:if="${isDirecteurActif or isAdminActif}">
+            <span class="sb-icon ic-mandat"><i class="fa-solid fa-gavel"></i></span>Mandats &amp; Rôles
+        </a>
+        <a href="/roles/historique" class="sb-link" th:if="${isAdminActif or isDirecteurActif}">
+            <span class="sb-icon" style="color:#818cf8"><i class="fa-solid fa-timeline"></i></span>Historique Rôles
+        </a>
+        <a href="/admin/rapport" class="sb-link" th:if="${isDirecteurActif or isAdminActif}">
+            <span class="sb-icon" style="color:#3b82f6"><i class="fa-solid fa-file-lines"></i></span>Rapport Annuel
+        </a>
+    </div>
+
+</nav>
+
+<!-- ④ Sidebar : Footer compte -->
+<div class="sb-footer">
+    <div class="sb-user">
+        <div class="sb-user-actions">
+            <a href="/profil" class="sb-user-action-link">
+                <i class="fa-solid fa-user-edit"></i> Mon Profil
+            </a>
+            <a href="/logout" class="sb-user-action-link logout">
+                <i class="fa-solid fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+        <div class="sb-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="sb-user-info">
+            <div class="sb-user-name" sec:authentication="name">Utilisateur</div>
+            <div class="sb-user-role">Membre LIAS</div>
+        </div>
+        <i class="fa-solid fa-chevron-up" style="color:#334155;font-size:.7rem"></i>
+    </div>
+</div>
+
+<!-- ⑤ TOPBAR — barre fixe EN HAUT (toggle + nom de compte) -->
+<div id="sb-topbar">
+
+    <!-- Bouton toggle thème -->
+    <button class="topbar-theme-btn" id="themeToggleBtn" onclick="liasToggleTheme()">
+        <i id="themeIcon" class="fa-solid fa-sun"></i>
+        <span id="themeLabel">Mode Clair</span>
+    </button>
+
+    <!-- Pill nom de compte -->
+    <div class="topbar-user-pill">
+        <div class="topbar-user-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <span class="topbar-user-name" sec:authentication="name">Utilisateur</span>
+    </div>
+
+</div>
+
+<!-- ⑥ Script toggle -->
+<script>
+(function () {
+    var saved = localStorage.getItem('lias-theme') || 'dark';
+    syncBtn(saved);
+
+    function syncBtn(theme) {
+        var icon  = document.getElementById('themeIcon');
+        var label = document.getElementById('themeLabel');
+        if (!icon || !label) return;
+        if (theme === 'light') {
+            icon.className    = 'fa-solid fa-moon';
+            label.textContent = 'Mode Sombre';
+        } else {
+            icon.className    = 'fa-solid fa-sun';
+            label.textContent = 'Mode Clair';
+        }
+    }
+
+    window.liasToggleTheme = function () {
+        var isLight = document.documentElement.classList.toggle('light-mode');
+        var theme   = isLight ? 'light' : 'dark';
+        localStorage.setItem('lias-theme', theme);
+        syncBtn(theme);
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        syncBtn(localStorage.getItem('lias-theme') || 'dark');
+    });
+}());
+</script>
+
+</div>

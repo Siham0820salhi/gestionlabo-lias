@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Calendrier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
+    <style>
+        :root { --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--accent:#3b82f6;--accent2:#6366f1;--text:#e2e8f0;--muted:#64748b;--border:rgba(255,255,255,0.06); }
+        * { margin:0;padding:0;box-sizing:border-box; }
+        body { background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif; }
+        .main-content { margin-left:250px;padding:32px; }
+        .page-title { font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px; }
+        .card-dark { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px; }
+        /* FullCalendar dark theme overrides */
+        .fc { color:var(--text);font-family:'DM Sans',sans-serif; }
+        .fc-theme-standard td,.fc-theme-standard th { border-color:var(--border); }
+        .fc .fc-toolbar-title { font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700; }
+        .fc .fc-button { background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:0.82rem;padding:6px 14px; }
+        .fc .fc-button:hover { background:rgba(255,255,255,0.08);color:white; }
+        .fc .fc-button-primary:not(:disabled).fc-button-active { background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:var(--accent); }
+        .fc-daygrid-day { background:var(--surface); }
+        .fc-daygrid-day:hover { background:var(--surface2); }
+        .fc-day-today { background:rgba(59,130,246,0.05) !important; }
+        .fc-col-header-cell { background:var(--surface2); }
+        .legend { display:flex;gap:16px;margin-top:16px;flex-wrap:wrap; }
+        .legend-item { display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted); }
+        .legend-dot { width:12px;height:12px;border-radius:50%; }
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+<div class="main-content">
+    <div class="page-title"><i class="fa-solid fa-calendar-days me-2"></i>Calendrier des Événements</div>
+    <p style="color:var(--muted);margin-bottom:24px">Visualisation temporelle de toutes les activités scientifiques</p>
+
+    <div class="card-dark">
+        <div id="calendar"></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Conférence</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Séminaire</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#818cf8"></div>Workshop</div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,listMonth'
+        },
+        events: '/evenements/api/calendrier',
+        eventClick: function(info) {
+            alert(info.event.title + '\n' + info.event.startStr);
+        },
+        height: 'auto'
+    });
+    calendar.render();
+});
+</script>
+</body>
+</html>

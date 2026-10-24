@@ -1,0 +1,23 @@
+# Maven
+target/
+*.class
+*.jar
+
+# Uploads
+uploads/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+
+# Logs
+*.log
+
+# Docker
+mysql_data/
+
+# OS
+.DS_Store
+Thumbs.db

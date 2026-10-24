@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LIAS - Ajouter Membre</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0c1221;--surface:#131929;--surface2:#1b2338;--accent:#3b82f6;--accent2:#6366f1;--accent3:#818cf8;--accent4:#60a5fa;--text:#dde3f0;--muted:#64748b;--border:rgba(255,255,255,0.07);}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+        .main-content{margin-left:250px;padding:32px;}
+
+        .page-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+        .page-sub{color:var(--muted);font-size:.88rem;margin-bottom:32px;}
+
+        .form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;max-width:860px;position:relative;}
+        .form-card::before{content:'';position:absolute;top:-1px;left:15%;right:15%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);}
+
+        .section-label{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin:24px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+        .section-label:first-child{margin-top:0;}
+
+        .field-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+        .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;transition:border-color .2s;margin-bottom:4px;}
+        .form-input:focus{outline:none;border-color:rgba(59,130,246,.4);box-shadow:0 0 0 3px rgba(59,130,246,.07);}
+        .form-input::placeholder{color:var(--muted);}
+        textarea.form-input{resize:vertical;}
+        select.form-input option{background:var(--surface2);}
+
+        .field-hint{font-size:.72rem;color:var(--muted);margin-bottom:14px;}
+
+        .file-zone{background:var(--surface2);border:1px dashed rgba(59,130,246,.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:18px;}
+        .file-zone:hover{border-color:rgba(59,130,246,.6);background:rgba(59,130,246,.04);}
+        .file-zone input{display:none;}
+        .file-zone-icon{font-size:1.8rem;color:var(--accent);margin-bottom:8px;opacity:.6;}
+        .file-zone-text{font-size:.82rem;color:var(--muted);}
+
+        .btn-submit{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0e1a;border:none;border-radius:12px;padding:13px 32px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:8px;}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.35);}
+
+        .btn-cancel{background:rgba(100,116,139,.1);border:1px solid rgba(100,116,139,.2);color:var(--muted);border-radius:12px;padding:13px 24px;font-weight:600;font-size:.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+        .btn-cancel:hover{background:rgba(100,116,139,.2);color:var(--text);}
+    </style>
+</head>
+<body>
+<div th:replace="~{sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="page-title">Ajouter un Nouveau Membre</div>
+    <div class="page-sub">Enregistrez un nouveau chercheur, doctorant ou associé au laboratoire LIAS</div>
+
+    <div class="form-card">
+        <form th:action="@{/membres/sauvegarder}" th:object="${membre}" method="POST" enctype="multipart/form-data">
+
+            <!-- Section Identité -->
+            <div class="section-label">
+                <i class="fa-solid fa-user"></i>Identité
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="field-label">Nom *</label>
+                    <input type="text" class="form-input" th:field="*{nom}" placeholder="Ex: Salhi" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Prénom *</label>
+                    <input type="text" class="form-input" th:field="*{prenom}" placeholder="Ex: Siham" required>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="field-label">Email professionnel *</label>
+                    <input type="email" class="form-input" th:field="*{email}" placeholder="exemple@um5.ac.ma" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Date de naissance</label>
+                    <input type="date" class="form-input" th:field="*{dateNaissance}">
+                </div>
+            </div>
+
+            <!-- Section Accès -->
+            <div class="section-label">
+                <i class="fa-solid fa-lock"></i>Accès & Rôle
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="field-label">Mot de passe par défaut *</label>
+                    <input type="password" class="form-input" th:field="*{password}" placeholder="••••••••" required>
+                    <div class="field-hint">Le membre pourra le modifier depuis son profil.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="field-label">Statut membre *</label>
+                    <select class="form-input" th:field="*{statutActuel}" required>
+                        <option value="" disabled selected>— Choisir —</option>
+                        <option value="PERMANENT">Permanent</option>
+                        <option value="DOCTORANT">Doctorant</option>
+                        <option value="ASSOCIE">Associé</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="field-label">Rôle système *</label>
+                    <select class="form-input" th:field="*{role}" required>
+                        <option value="" disabled selected>— Choisir —</option>
+                        <option value="PERMANENT">PERMANENT</option>
+                        <option value="DOCTORANT">DOCTORANT</option>
+                        <option value="ASSOCIE">ASSOCIE</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select>
+                    <div class="field-hint">Détermine les droits d'accès dans l'application.</div>
+                </div>
+            </div>
+
+            <!-- Section Affiliation -->
+            <div class="section-label">
+                <i class="fa-solid fa-building-columns"></i>Affiliation & Formation
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="field-label">Établissement d'origine</label>
+                    <input type="text" class="form-input" th:field="*{etablissementOrigine}" placeholder="Ex: Université Hassan II">
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Laboratoire d'origine</label>
+                    <input type="text" class="form-input" th:field="*{laboratoireOrigine}" placeholder="Ex: LIAS, LRI...">
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="field-label">Équipe actuelle</label>
+                    <input type="text" class="form-input" th:field="*{equipeActuelle}" placeholder="Ex: Équipe Data Science">
+                </div>
+                <div class="col-md-6">
+                    <label class="field-label">Date d'embauche</label>
+                    <input type="date" class="form-input" th:field="*{dateEmbauche}">
+                </div>
+            </div>
+
+            <!-- Section Profil -->
+            <div class="section-label">
+                <i class="fa-solid fa-pen-nib"></i>Profil Scientifique
+            </div>
+
+            <label class="field-label">Centres d'intérêt</label>
+            <input type="text" class="form-input" th:field="*{centresDinteret}"
+                   placeholder="Ex: Intelligence Artificielle, Big Data, IoT">
+
+            <label class="field-label">Biographie</label>
+            <textarea class="form-input" th:field="*{biographie}" rows="3"
+                      placeholder="Brève description du parcours et des axes de recherche..."></textarea>
+
+            <!-- Photo -->
+            <div class="section-label">
+                <i class="fa-solid fa-image"></i>Photo de profil
+            </div>
+
+            <label class="file-zone" for="photoFile">
+                <input type="file" id="photoFile" name="photoFile" accept="image/png,image/jpeg,image/jpg">
+                <div class="file-zone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div class="file-zone-text">Cliquez pour choisir une photo (JPG, PNG)</div>
+            </label>
+
+            <!-- Boutons -->
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px">
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-user-plus"></i>Enregistrer le membre
+                </button>
+                <a href="/membres" class="btn-cancel">
+                    <i class="fa-solid fa-arrow-left"></i>Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.getElementById('photoFile').addEventListener('change', function() {
+    const label = this.closest('.file-zone').querySelector('.file-zone-text');
+    if (this.files[0]) label.textContent = this.files[0].name;
+});
+</script>
+</body>
+</html>
